@@ -39,5 +39,22 @@ print("Current z's requires_grad state by detach: ",z_det.requires_grad)
 
 #(p.s) Gradient of tensor & Jacobian Product
 """
+대부분 스칼라 손실 함수로 일부 매개변수 변화도를 계산하지만, 출력함수가 임의의 텐서인 경우 실제 변화도가 아닌 야코비안 곱을 계산한다.
+x증분에 대한 y증분 즉 변화도는 야코비안 행렬로 주어지며, pytorch는 입력벡터에 대한 야코비안 곱을 계산한다.
+ 즉, 이 야코비안 곱은 gradient를 값이 아닌 x와y가 대응되는 각 야코비안 행렬을 반환해야하는 경우 사용된다
+동일한 인자로 backward하면 backpropagation시 pytorch가 변화도를 누적해두기에 변화도 값이 달라진다.
+고로 제대로 된 변화도를 계산하기 위해서는 grad를 먼저 0으로 만들어야 하는데, 실제 과정에선 optimizer가 이 과정을 수행한다.
 
+야코비안 행렬은 비선형을 선형으로 근사시킨 행렬이다. 아래 결과 이유를 잘 모르겠네..
 """
+inp=torch.eye(5, requires_grad=True)#대각 1
+print("\ninitial value of inp: \n", inp)
+out=(inp+1).pow(2)
+print("\ninitial value of out: \n", out)
+out.backward(torch.ones_like(inp), retain_graph=True)
+print("First call\n", inp.grad)
+out.backward(torch.ones_like(inp), retain_graph=True)
+print("\nSecond call\n", inp.grad)
+inp.grad.zero_()
+out.backward(torch.ones_like(inp), retain_graph=True)
+print("\nCall after zeroing gradients\n", inp.grad)

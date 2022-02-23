@@ -1,0 +1,15 @@
+[텍스트 전처리]
+텍스트 전처리 과정에서 토큰화를 통해 corpus를 token단위로 나눌 수 있는데, 기준이 단어면 word tokenization, 문장이면 sentence segmentation이라고 한다.
+
+ NLTK의 word_tokenize와 WordPunctTokenizer, Keras의 text_to_word_sequence를 통해 word_tokenize처리가 가능하지만 각기 구두점, 아포스트로피 등 처리 규칙이 약간씩 다르다.
+표준으로 사용되는 토큰화 방법중 하나인 Penn Treebank Tokenization는 nltk.tokenize에서 제공해주고 있다.
+
+ sentence tokenization역시 nltk.tokenize의 sent_tokenize로 사용이 가능하다. 한국어 sentence segmentation의 경우 KSS(Korean Sentence Splitter)가 주로 사용된다.
+한국어의 경우 교착어 특성 상 불규칠 활용, 규칙활용, 자립형태소, 의존형태소 등 고려해야 할 것이 많다. 고로 품사 태깅(Part-of-speech tagging)의 경우도 영어의 경우
+nltk.tag의 pos_tag를 이용하여 Penn Treebank POS Tags기준을 사용할 수 있지만, 한국어의 경우 별도로 KoNLPy라는 파이썬 패키지를 사용하여 Okt(Open Korea Text), Mecab, Komoran, Hannanum, KKma
+등의 형태소 분석기를 따로 사용해야 한다.
+
+위의 토큰화 작업 전,후로 노이즈데이터를 제거하는 정제(Cleaning) 및 표현만 다른 단어로 통합시키는 정규화(Normalization)가 함께하는데, 이과정에서 정규식이 잘 사용된다.
+정규화(Normalization)의 기법 중 단어의 개수를 줄이기 위해 뿌리 사전단어를 찾아가는 표제어 추출(lemmatization)과 어간을 어림짐작하는 어간추출(stemming)이 있다.
+
+노이즈 데이터를 제거하는 정제(Cleaning)을 위해선 큰 의미가 없는 단어를 제거하는 작업도 필요한데 이를 특별히 불용어(stopword)라고 부르며 영어의 경우 nltk.corpus의 stopwords에서 확인이 가능하다.

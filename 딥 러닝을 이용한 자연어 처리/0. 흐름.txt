@@ -13,3 +13,5 @@ nltk.tag의 pos_tag를 이용하여 Penn Treebank POS Tags기준을 사용할 �
 정규화(Normalization)의 기법 중 단어의 개수를 줄이기 위해 뿌리 사전단어를 찾아가는 표제어 추출(lemmatization)과 어간을 어림짐작하는 어간추출(stemming)이 있다.
 
 노이즈 데이터를 제거하는 정제(Cleaning)을 위해선 큰 의미가 없는 단어를 제거하는 작업도 필요한데 이를 특별히 불용어(stopword)라고 부르며 영어의 경우 nltk.corpus의 stopwords에서 확인이 가능하다.
+
+텍스트 전처리에 사용되는 유용한 도구인 regular expression. re를 알아본다.

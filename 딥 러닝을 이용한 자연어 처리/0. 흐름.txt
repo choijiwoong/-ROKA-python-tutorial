@@ -18,3 +18,8 @@ nltk.tag의 pos_tag를 이용하여 Penn Treebank POS Tags기준을 사용할 �
 
 Integer Encoding은 각종 정제, 정규화 과정과 함께 연산효율을 높이기 위해 사용하는 것으로, 보통 단어 등장 빈도수를 기준으로 index를 부여하여 mapping하며, mapping standard(매핑기준)에 해당하지 않는 항목에 대해선 Out-Of-Vocabulary로 따로 indexing한다.
 이때 등장 빈도수를 직접 알아낼 수도 있지만, collections.Counter, FreqDist, enumerate, keras의 Tokenizer등을 사용하여 알아내는 편리한 방법도 있다.(feat. most_common, sum(~,[]), np.hstack())
+
+특정값으로 shape를 조정하는 것이 padding이며, keras의 pad_sequences를 사용하여 편리하게 padding이 가능하다.
+
+문자를 숫자로 변환하는 Integer Encoding에서 더 구체적으로 계산에 편리한 벡터로 바꾸는 것이 One-Hot Encoding이며, keras의 to_categorial로 변환이 가능하다. 다만 단어간의 연관성을 표현못한다는 단점이 있어 이를 보완하기 위해 다차원 벡터로 나타내는 Word2Vec등의 방법이 존재한다.
+

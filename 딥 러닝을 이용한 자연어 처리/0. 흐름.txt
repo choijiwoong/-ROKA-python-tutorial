@@ -30,3 +30,8 @@ Supervised Learning은 기본적으로 데이터를 학습을 위해 X_train, y_
 [언어 모델]
 자연스러운 단어 시퀀스를 찾아내는 모델로 적절성은 Machine Translation, Spell Correction, Speech Recognition을 이용하여 판단하며, 내부적으로 conditional probability를 이용한다.
 Count기반인 Statistical Language Model의 희소문제를 해결하기 위해 count확률을 높이는 N-gram Language Model이 있지만, 근본적인 문제 해결의 한계와 n의 크기에 따른 trade-off로 인해 Neural Netword Based Language Model이 선호된다.
+이때 두 모델의 성능을 비교하기 위해 Perplexity(PPL)을 사용하는데, 값이 낮을수록 좋으며 측정 시점에 모델이 고민중인 선택지의 개수를 brancing factor라고 한다.
+
+[카운트 기반의 단어]
+크게 Local(Discrete) Representation_해당단어만집중, Distributed(Continuous) Representation_앞뒤단어도 참고로 나뉘며, Local Representation중 단어순서와 상관없이 frequency만 집중하는 Bag-of-Words(BoW)가 있다.
+이는 sklearn의 CountVectorizer에서 지원하며(띄어쓰기 기준이기에 영어만. 한국어 지X) BoW는 frequency만 보아 단어의 중요도를 판단하겠다는 거라 불용어제거하면 성능이 좋아지며 CountVectorizer의 생성자인수 stop_words에 지정하여 불용어를 설정한다.

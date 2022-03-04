@@ -55,3 +55,6 @@ Binary Classification의 loss function의 Local Minimum문제를 해결하기 �
 손실함수로는 연속형변수를 위한 MSE, Binary Classification(sigmoid)를 위한 binary_crossentropy, Multi-Class Classification(softmax)를 위한 CategoricalCrossentropy, Interger encoded를 위한 sparse_categorical_crossentropy가 있다.
 배치 크기로는 전체를 하나의 배치로 두는 Batch Gradient Descent, 배치크기를 1로 두는 Stochastic Gradient Descent, 배치크기를 지정하는 Mini-Batch Gradient Descent가 있다.
 Optimizer로는 관성을 주는 Momentum, 매개변수별 다른 학습률의 Adagrad, Adagrad의 지나치게 낮은 학습률부분의 수식을 변경한 RMSprop, RMSprop에 Momentum을 더한 Adam이 있으며, 대부분 model.compile의 optimzier인자에 문자열로 전달이 가능하다.
+ 과적합을 막기 위해 데이터 양을 늘리거나 parameter을 줄이거나, Weight Regularization(L1 Norm, L2 Norm)을 적용하거나, Dropout을 사용할 수 있다.
+ Gradient Vanishing, Exploding을 막기 위해 Leaky ReLU등을 activation function으로 사용하거나, Gradient Clipping을 지정하거나, Xavier Initialization & He Initialization으로 weight initialization으로 해결할 수 있다.
+다른 방법으로 변화폭을 정규화 시키는 Batch Normalization이나 Layer Normalization을 사용할 수 있다.

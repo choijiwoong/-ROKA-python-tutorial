@@ -58,3 +58,6 @@ Optimizer로는 관성을 주는 Momentum, 매개변수별 다른 학습률의 A
  과적합을 막기 위해 데이터 양을 늘리거나 parameter을 줄이거나, Weight Regularization(L1 Norm, L2 Norm)을 적용하거나, Dropout을 사용할 수 있다.
  Gradient Vanishing, Exploding을 막기 위해 Leaky ReLU등을 activation function으로 사용하거나, Gradient Clipping을 지정하거나, Xavier Initialization & He Initialization으로 weight initialization으로 해결할 수 있다.
 다른 방법으로 변화폭을 정규화 시키는 Batch Normalization이나 Layer Normalization을 사용할 수 있다.
+ Sequential API, Functional API, Subclassing API의 방법이 있다. 자세한건 commit 내용을 참고하자.
+ texts_to_metrix로 count, binary, freq, tfidf모드 전처리가 가능하다. null인 sample이 있는지 data.isnull().values.any(), 중복을 제외 data['email'].nunique()를 사용할 수 있다.
+tokenizer 인스턴스화 시 vocab_size를 정해 frequency기준 최대 단어장크기를 설정할 수 있다.

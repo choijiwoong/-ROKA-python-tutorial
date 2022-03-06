@@ -20,3 +20,12 @@ LSTM은 메모리 셀에 입력 데이트, 망각(삭제) 게이트, 출력 게�
 셀상태의 값은 tanh를 지나 (-1,+1)이 되고, 위의 출력 게이트값과 연산되며 값이 걸러져 hidden_state가 된다. 이는 출력층으로도 향한다.
 
 와 이해는 되는데 뭔가 간지난다. 기억이 관건일듯"""
+
+    #[GRU]
+"""GRU(Gated Recurrent Unit)은 LSTM의 장기 의존성 문제에 대한 해결책을 유지하면서, 은닉 상태를 update하는 계산을 줄였다(최적화)
+GRU의 성능은 LSTM과 유사하지만, LSTM의 구조를 단순화시켰다.
+
+    1. GRU(Gated Recurrent Unit)
+성능은 비슷하나, 데이터의 양이 적을땐 매개변수값이 적은 GRU가 조금 빠르고 데이터 양이 많으면 LSTM이 더 좋다.
+케라스에서 SimpleRNN, LSTM과 같이 GRU를 사용할 수 있다."""
+model.add(GRU(hidden_state, input_shape=(timesteps, input_dim)))

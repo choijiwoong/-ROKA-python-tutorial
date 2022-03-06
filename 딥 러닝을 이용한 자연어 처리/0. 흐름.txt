@@ -71,4 +71,5 @@ tokenizer 인스턴스화 시 vocab_size를 정해 frequency기준 최대 단어
 (batch_size, timesteps, input_dim)의 3D Tensor을 입력으로 받으며, return_sequences인자에 따라 (batch_size, timesteps, output_dim)혹은 (batch_size, output_dim)의 Tensor를 리턴한다.
 2개이상의 은닉층을 가지는 Deep RNN, forward&backward hidden state를 받응 Bidirectional RNN, 두개가 합쳐진 Bidirectional Deep RNN이 있으며 이는 태깅 작업에 유용하다.
  Valilla RNN의 길이가 길때, 초기의 hidden_state가 영향력을 잃는 The problem of Long-Term Dependencies를 해결하기 위해 cell_state를 추가한 LSTM(Long Short-Term Memory)를 사용하며, 
-이는 이전의 cell_state값의 반영도를 결정하는 삭제게이트, 현재 입력을 반영하는 입력 게이트와의 연산후 출력게이트를 통과시켜 현재시점의 hidden_state를 결정한다.
+이는 이전의 cell_state값의 반영도를 결정하는 삭제게이트, 현재 입력을 반영하는 입력 게이트와의 연산후 출력게이트를 통과시켜 현재시점의 hidden_state를 결정한다. LSTM의 구조를 단순화시킨 Gated Recurrent Unit)GRU)가 있는데 성능은 비슷하다.
+ LSTM은 (hidden_states, last_hidden_state, last_cell_state)을 반환하며, Bidirectional LSTM은 (hidden_states, forward_h, forward_c, backward_h, backward_c)를 리턴한다. 이때 Bidirectional의 경우 return_state를 이용할 경우 정방향과 역방향의 state가 연결되어 나오는데, 일관성이 없으니 유의하자.

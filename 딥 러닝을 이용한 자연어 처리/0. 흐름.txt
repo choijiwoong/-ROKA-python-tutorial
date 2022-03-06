@@ -67,3 +67,8 @@ tokenizer 인스턴스화 시 vocab_size를 정해 frequency기준 최대 단어
 다만 이전의 모든 단어를 고려하지 못한다는 n-gram의 문제를 공유하는데, 이는 Recurrent Neural Network Language Model을 통해 극복 가능하다.
 
 [순환신경망]
+ FFNN이 아닌 신경망 중 하나로, 입력벡터와 출력벡터 길이에 따라 구분되는데, Image Captioning에 이용되는 one-to-many, sentiment classification에 사용되는 many-to-one, 개체명 인식등에 사용되는 many-to-many가 있다.
+(batch_size, timesteps, input_dim)의 3D Tensor을 입력으로 받으며, return_sequences인자에 따라 (batch_size, timesteps, output_dim)혹은 (batch_size, output_dim)의 Tensor를 리턴한다.
+2개이상의 은닉층을 가지는 Deep RNN, forward&backward hidden state를 받응 Bidirectional RNN, 두개가 합쳐진 Bidirectional Deep RNN이 있으며 이는 태깅 작업에 유용하다.
+ Valilla RNN의 길이가 길때, 초기의 hidden_state가 영향력을 잃는 The problem of Long-Term Dependencies를 해결하기 위해 cell_state를 추가한 LSTM(Long Short-Term Memory)를 사용하며, 
+이는 이전의 cell_state값의 반영도를 결정하는 삭제게이트, 현재 입력을 반영하는 입력 게이트와의 연산후 출력게이트를 통과시켜 현재시점의 hidden_state를 결정한다.

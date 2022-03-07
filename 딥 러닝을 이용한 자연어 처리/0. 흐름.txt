@@ -73,3 +73,9 @@ tokenizer 인스턴스화 시 vocab_size를 정해 frequency기준 최대 단어
  Valilla RNN의 길이가 길때, 초기의 hidden_state가 영향력을 잃는 The problem of Long-Term Dependencies를 해결하기 위해 cell_state를 추가한 LSTM(Long Short-Term Memory)를 사용하며, 
 이는 이전의 cell_state값의 반영도를 결정하는 삭제게이트, 현재 입력을 반영하는 입력 게이트와의 연산후 출력게이트를 통과시켜 현재시점의 hidden_state를 결정한다. LSTM의 구조를 단순화시킨 Gated Recurrent Unit)GRU)가 있는데 성능은 비슷하다.
  LSTM은 (hidden_states, last_hidden_state, last_cell_state)을 반환하며, Bidirectional LSTM은 (hidden_states, forward_h, forward_c, backward_h, backward_c)를 리턴한다. 이때 Bidirectional의 경우 return_state를 이용할 경우 정방향과 역방향의 state가 연결되어 나오는데, 일관성이 없으니 유의하자.
+
+[워드 임베딩(Word Embedding)]
+Sparse Representation의 단점을 해소하기 위해 Dense Vector로 표현(distributed representation)하는 것을 Word Embedding이라하며, 
+Word2Vec의 기법으로 context word로 centor word를 추론하는CBOW(Continuous Bag Of Word), centor word로 context word를 추론하는 Skip-gram이 있다.
+projection layer가 lookup table로서 존재하는데, CBOW의 경우 centor word를 구하기에 투사층에서 입력벡터들이 평균을 구한다. 즉, 구조가 Input_layer->Projection_layer->Output_layer로 간단하기에
+hidden layer가 추가적으로 존재하는 NNLM과 비교하여 우위를 가진다.(feat. 좀 더 좋은 기법_hierachical softmax, negative sampling)

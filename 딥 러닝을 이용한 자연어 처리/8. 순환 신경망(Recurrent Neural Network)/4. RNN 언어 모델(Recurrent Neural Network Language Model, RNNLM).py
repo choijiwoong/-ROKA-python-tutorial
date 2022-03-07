@@ -19,28 +19,27 @@ text="""경마장에 있는 말이 뛰고 있다\n
 그의 말이 법이다\n
 가는 말이 고가야 오는 말이 곱다\n"""
 
-tokenizer=Tokenizer()#make vocabulary
-tokenizer.fit_on_texts([text])#tokenizer에 text세팅
-vocab_size=len(tokenizer.word_index)+1#okenizer.word_index시 index[0]을 사용하지 않고 1부터 표시해서 +1
+tokenizer=Tokenizer()
+tokenizer.fit_on_texts([text])
+vocab_size=len(tokenizer.word_index)+1#index[0]을 사용하지 않고 1부터 표시해서 크기+1
 print('단어 집합의 크기: %d'%vocab_size)
 print('단어에 부여된 정수 인덱스: ', tokenizer.word_index, '\n')
 
 sequences=list()
 for line in text.split('\n'):
-    encoded=tokenizer.texts_to_sequences([line])[0]#BoW기반 숫자 시퀀스로. 문장의 구분을 위해 []로 line 감싸줌.
+    encoded=tokenizer.texts_to_sequences([line])[0]#integer encoding for each sentence.
     for i in range(1, len(encoded)):
-        sequence=encoded[:i+1]#슬라이싱으로 학습에 필요한 데이터 제작(a, ab, abc, ...)
+        sequence=encoded[:i+1]#teacher forcing을 위한 데이터 생성(a, ab, abc, ...)
         sequences.append(sequence)
 print('학습에 사용할 샘플의 개수: %d'%len(sequences))
-print('학습에 사용할 전체 샘플(sequences): ', sequences)#아직 레이블로 사용할 문장별 마지막 단어가 분리되지 않음
+print('학습에 사용할 전체 샘플(sequences): ', sequences)
 
-max_len=max(len(l) for l in sequences)#문장의 최대 길이
-print('샘플의 최대 길이: ', max_len)#샘플의 최대크기만큼 padding하기 위함.
+max_len=max(len(l) for l in sequences)#padding을 위함
+print('샘플의 최대 길이: ', max_len)
 
-sequences=pad_sequences(sequences, maxlen=max_len, padding='pre')#label데이터를 분리할 때 쉽게 분리할 수 있도록(통일된 index) padding으로 label index 통일
-print('샘플의 max_len으로 padding된 sequence(전체 훈련 데이터): \n', sequences,'\n')
+sequences=pad_sequences(sequences, maxlen=max_len, padding='pre')#teacher forcing에서 label데이터의 분리를 위함
+print('padded sequence(훈련 데이터): \n', sequences,'\n')
 
-#레이블의 분리_a b c d에서 a b c로 d를 추론하게 하므로(교사 강요)
 sequences=np.array(sequences)
 X=sequences[:,:-1]#리스트의 마지막을 제외한 나머지
 y=sequences[:,-1]#리스트의 마지막
@@ -48,8 +47,8 @@ y=sequences[:,-1]#리스트의 마지막
 print("X data: ", X)
 print("y data: ", y)
 
-y=to_categorical(y, num_classes=vocab_size)#{Y는 여기서 잘 one-hot encoding 했는데..}
-print("one-hot vectorized y: ", y)#.....
+y=to_categorical(y, num_classes=vocab_size)#label의 one-hot vectorization
+print("one-hot vectorized y: ", y)
 
 #2. 모델 설계하기
 from tensorflow.keras.models import Sequential
@@ -59,11 +58,11 @@ from tensorflow.keras.layers import Embedding, Dense, SimpleRNN
 embedding_dim=10
 hidden_units=32
 
-model=Sequential()
-model.add(Embedding(vocab_size, embedding_dim))#vocab_size*embedding_dim matrix(lookup table) for learning. embedded vector
+model=Sequential()#RNNLM은 Embedding layer, RNN, Dense를 지난다.
+model.add(Embedding(vocab_size, embedding_dim))#(input_dim, output_dim)
 model.add(SimpleRNN(hidden_units))
-model.add(Dense(vocab_size, activation='softmax'))#vocab의 단어들의 가능성을 표시해야하기에.
-model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])=
+model.add(Dense(vocab_size, activation='softmax'))#output_dim
+model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])#(y가 one-hot vector이기때문에)
 model.fit(X, y, epochs=200, verbose=0)
 
 def sentence_generation(model, tokenizer, current_word, n):#모델, 토크나이저, 현재 단어, 반복할 횟수
@@ -71,10 +70,10 @@ def sentence_generation(model, tokenizer, current_word, n):#모델, 토크나이
     sentence=''
 
     for _ in range(n):
-        encoded=tokenizer.texts_to_sequences([current_word])[0]#해당 단어를 integer encoding by tokenizer(이미 입력된)
-        encoded=pad_sequences([encoded], maxlen=5, padding='pre')#padding. X데이터화.
+        encoded=tokenizer.texts_to_sequences([current_word])[0]
+        encoded=pad_sequences([encoded], maxlen=5, padding='pre')#X데이터.(X_len=5, y_len=1)
 
-        result=model.predict(encoded, verbose=0)#X데이터로 predict
+        result=model.predict(encoded, verbose=0)#softmax 결과벡터(가능성)
         result=np.argmax(result, axis=1)#vocab 가능성 리스트중 max의 argument반환
 
         for word, index in tokenizer.word_index.items():
@@ -104,7 +103,7 @@ df=pd.read_csv('ArticlesApril2018.csv')#https://www.kaggle.com/aashita/nyt-comme
 print("csv 데이터: ", df.head(), '\n')
 
 print('열의 개수: ', len(df.columns))
-print(df.columns)
+print("df의 columns: ", df.columns)
 
 print('headline열에 null이 있는지: ', df['headline'].isnull().values.any(), '\n')
 
@@ -120,14 +119,14 @@ print('상위 5개의 제목: ', headline[:5],'\n')
 
 #데이터 전처리(구두점 제거, 소문자화)
 def repreprocessing(raw_sentence):
-    preprocessed_sentence=raw_sentence.encode('utf8').decode('ascii', 'ignore')#ignore은 옵셥으로 backslash를 삭제하는듯
-    return ''.join(word for word in preprocessed_sentence if word not in punctuation).lower()#구두점 제거, 소문자화
-preprocessed_headline=[repreprocessing(x) for x in headline]
+    preprocessed_sentence=raw_sentence.encode('utf8').decode('ascii', 'ignore')#ignore: \삭제. encoding format통일화
+    return ''.join(word for word in preprocessed_sentence if word not in punctuation).lower()#정제(cleaning)
+preprocessed_headline=[repreprocessing(x) for x in headline]#모든 headline에 대해 cleaning.
 print('전처리된 상위 5개 제목: ', preprocessed_headline[:5], '\n')
 
 #단어 집합의 생성
 tokenizer=Tokenizer()
-tokenizer.fit_on_texts(preprocessed_headline)#모든 전처리된 제목을 tokenizer에 등록
+tokenizer.fit_on_texts(preprocessed_headline)
 vocab_size=len(tokenizer.word_index)+1
 print('단어 집합의 크기: ', vocab_size)
 
@@ -137,26 +136,26 @@ for sentence in preprocessed_headline:
     encoded=tokenizer.texts_to_sequences([sentence])[0]#등록된 vocab의 index에 따라 integer coding {진짜 integer encoding됬는데 왜 손실함수로 CategoricalCrossEntropy쓰라는거야..}
     for i in range(1, len(encoded)):
         sequence=encoded[:i+1]
-        sequences.append(sequence)#LSTM 전용 훈련데이터 생성(a, ab, abc, ...)
+        sequences.append(sequence)#convert data as format of teaching force
 print('훈련 데이터 상위 11개: ', sequences, '\n')
 
-#index가 어떤 단어를 의미하는지를 확인하기 위한 index_to_word 생성(lookup table)
+#lookup table 'index_to_word'생성
 index_to_word={}
 for key, value in tokenizer.word_index.items():
-    index_to_word[value]=key#거꾸로 저장
+    index_to_word[value]=key
 print("빈도수 상위 477번 단어(index_to_word test):", index_to_word[477], '\n')
 
-#y데이터 분리 전 전체 샘플의 길이를 동일하게 padding.
-max_len=max(len(l) for l in sequences)
-print('샘플의 최대 길이:', max_len, '\n')#해당 위치로 label분리 예정
+max_len=max(len(l) for l in sequences)#for padding
+print('샘플의 최대 길이:', max_len, '\n')
 
-sequences=pad_sequences(sequences, maxlen=max_len, padding='pre')#label이 뒤에있기에 pre padding
+sequences=pad_sequences(sequences, maxlen=max_len, padding='pre')#for seperating X, y
 print('padding된 상위 3개 데이터: ', sequences[:3])
 
-#padding된 데이터로부터 label 분리
+#데이터 분리
 sequences=np.array(sequences)
-X=sequences[:, :-1]#마지막 -1
-y=sequences[:, -1]#마지막
+X=sequences[:, :-1]#X
+y=sequences[:, -1]#y
+y=to_categorical(y, num_classes=vocab_size)#one-hot vectorization
 print('label 분리된 X 상위 데이터 3개(label이 분리되었기에 당연히 샘플의 길이가 -1됨): ', X[:3], '\n')
 print('label 분리된 y 상위 데이터 3개:', y[:3], '\n\n')
 
@@ -167,11 +166,11 @@ from tensorflow.keras.layers import Embedding, Dense, LSTM
 embedding_dim=10
 hiddden_units=128
 
-model=Sequential()
+model=Sequential()#RNNLM의 구조를 잘 익히자. Embedding layer->RNN->Dense->softmax...etc
 model.add(Embedding(vocab_size, embedding_dim))
-model.add(LSTM(hidden_units))
+model.add(LSTM(hidden_units))#SimpleRNN대신 LSTM을 사용했는데, the problem of long-term dependencies를 해결하기 위함이다(feat. cell_state)
 model.add(Dense(vocab_size, activation='softmax'))
-model.compile(loss='SparseCategoricalCrossentropy', optimizer='adam', metrics=['accuracy'])#??? 아 야 위에 예시랑 다르게 y one-hot encoding빠졌다 수정하자.
+model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 model.fit(X, y, epochs=200, verbose=2)
 
 def sentence_generation(model, tokenizer, current_word, n):
@@ -194,7 +193,5 @@ def sentence_generation(model, tokenizer, current_word, n):
     sentence=init_word+sentence
     return sentence
 
-#print("i를 통해 생성된 문장(10개 단어): ", sentence_generation(model, tokenizer, 'i' 10))
-#print("how를 통해 생성된 문장(10개 단어): ", sentence_generation(model, tokenizer, 'how', 10))
 print(sentence_generation(model, tokenizer, 'i', 10))
 print(sentence_generation(model, tokenizer, 'how', 10))

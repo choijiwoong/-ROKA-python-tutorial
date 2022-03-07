@@ -79,3 +79,4 @@ Sparse Representation의 단점을 해소하기 위해 Dense Vector로 표현(di
 Word2Vec의 기법으로 context word로 centor word를 추론하는CBOW(Continuous Bag Of Word), centor word로 context word를 추론하는 Skip-gram이 있다.
 projection layer가 lookup table로서 존재하는데, CBOW의 경우 centor word를 구하기에 투사층에서 입력벡터들이 평균을 구한다. 즉, 구조가 Input_layer->Projection_layer->Output_layer로 간단하기에
 hidden layer가 추가적으로 존재하는 NNLM과 비교하여 우위를 가진다.(feat. 좀 더 좋은 기법_hierachical softmax, negative sampling)
+ gensim.models.Word2Vec을 사용할때의 hyperparameter들은 vector_size는 embedding된 벡터의 dimention, min_count는 최소 빈도수 제한, sg는 Skip-gram과 CBOW의 방식선택을 의미한다.

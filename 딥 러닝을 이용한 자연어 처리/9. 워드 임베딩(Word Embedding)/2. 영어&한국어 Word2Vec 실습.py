@@ -45,7 +45,7 @@ loaded_model=KeyedVectors.load_word2vec_format("eng_w2v")
 
 model_result=loaded_model.most_similar("guy")
 print("\n불러온 모델을 통한 computer와 비슷한 단어들:", model_result)
-"""
+
 
     #[한국어 Word2Vec 만들기(네이버 영화 리뷰)]
 import pandas as pd
@@ -92,6 +92,19 @@ model=Word2Vec(sentences=tokenized_data, vector_size=100, window=5, min_count=5,
 print("Size of embedding matrix of Word2Vec: ", model.wv.vectors.shape)
 
 print("강호동과 비슷한 유사한 단어: ", model.wv.most_similar("강호동"))
-print("군인과 유사한 단어: ", model.wv.most_similar("군인"))
+print("군인과 유사한 단어: ", model.wv.most_similar("군인"),'\n\n')"""
 
-    #[사전 훈련된 Word2Vec 임베딩(Pre-trained Word2Vec embedding) 소개]
+    #[사전 훈련된 Word2Vec 임베딩(Pre-trained Word2Vec embedding) 소개]_위키피디아 등의 방대한 데이터로 훈련된 워드 임베딩 이용.
+#이는 sentimental classification의 데이터가 부족하면, Word2Vec, GloVe등의 임베딩 벡터를 가져와 모델의 입력으로 사용하는 것도 좋은 방법이다.
+#구글은 3백만개의 Word2Vec단어벡터들을 제공하며, 각 임베딩 벡터의 차원은 300이다.
+import gensim
+import urllib.request
+
+urllib.request.urlretrieve("https://s3.amazonaws.com/dl4j-distribution/GoogleNews-vectors-negative300.bin.gz", filename="GoogleNews-vectors-negative300.bin.gz")
+word2vec_model=gensim.models.KeyedVectors.load_word2vec_format('GoogleNews-vectors-negative300.bin.gz', binary=True)
+print("모델의 크기(shape): ", word2vec_model.vectors.shape)
+
+print("'this'와 'is'의 유사도: ", word2vec_model.similarity('this', 'is'))
+print("'school'과 'sun'의 유사도: ", word2vec_model.similarity('school', 'sum'))
+
+print("'book'의 벡터: ", word2vec_model['bool'])

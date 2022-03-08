@@ -80,3 +80,6 @@ Word2Vec의 기법으로 context word로 centor word를 추론하는CBOW(Continu
 projection layer가 lookup table로서 존재하는데, CBOW의 경우 centor word를 구하기에 투사층에서 입력벡터들이 평균을 구한다. 즉, 구조가 Input_layer->Projection_layer->Output_layer로 간단하기에
 hidden layer가 추가적으로 존재하는 NNLM과 비교하여 우위를 가진다.(feat. 좀 더 좋은 기법_hierachical softmax, negative sampling)
  gensim.models.Word2Vec을 사용할때의 hyperparameter들은 vector_size는 embedding된 벡터의 dimention, min_count는 최소 빈도수 제한, sg는 Skip-gram과 CBOW의 방식선택을 의미한다.
+사전훈련된 Word2Vec을 google에서 지원해준다.
+ 네거티브 샘플링은 일반적인 Word2Vec의 학습 후 update시 단어와 관련없는 것까지 업데이트 하는 비효율성을 줄이기기 위한 것으로, 이웃관계인 단어들은 레이블1의 값, 랜덤값은 레이블 0의 값으로 세팅되고
+center word, context word별 embedding layer을 통과하고 그 값이 내적과 label을 비교하여 loss를 update한다.

@@ -85,3 +85,13 @@ hidden layer가 추가적으로 존재하는 NNLM과 비교하여 우위를 가�
 center word, context word별 embedding layer을 통과하고 그 값이 내적과 label을 비교하여 loss를 update한다.
  Glove는 LSA(Letent Semantic Analysis), Word2Vec의 기반인 카운트기반, 예측기반을 모두 사용하여 추론하는데, 일부주변단어만 확인하는 기존의 단점을 Co-occurence Probabiltity를 통해 보완한다. 
 FastText는 Word2Vec의 모르는단어가 나오면 추론을 못한다는 단점을 보완하여 n-gram으로 subword를 word embedding하여 오타나 희귀단어에 있어 오류를 던지는 Word2Vec보다 강세를 보인다. Pre-trained word embedding을 Word2Vec혹은 GloVe로 할 수 있다.
+
+ 잠시 정리의 필요성을 느껴정리해보자면 Dense vector로 표현하는 것이 Word Embedding이며 CBOW, Skipgram의 Word2Vec은 단점인 불필요한 update를 해소하기 위해 negative sampling을 톨해 window에 있는 주변단어와 중심단어의 내적을 label과 비교하여 update한다.
+GloVe는 Word2Vec, LSA에서 window범위내의 단어만 확인하는 것을 Co-occruence Probability를 통해 보완한다. 여기서 더 나아가 FastText는 Word2Vec이 오타와 같이 조금이라도 다른 단어, 유사한 단어에 대한 추론력을 높이기 위해 n-gram(3~6)의 subword개념을 도입하였다. 이 GloVe와 Word2Vec은 pre-trained version을 지원한다.
+위에 언급된 Word Embedding기법들을 살펴보면 Word2Vec은 Sparse representation 즉 생소한 단어의 가중치가 높게 측정되는 것을 막았고, Glove는 전체 단어가 추론에 고려되게 하였으며, FastText는 subword에 대한 추론이 가능하게 하였다.
+ 하지만 위의 Word2Vec, GloVe, FastText가 해결하지 못하는 문제가 하나 있었다.  일부 글자는 같은데 의미가 다른 단어 즉 '탄광' '광원' & 'Bank Account(은행계좌)', 'River Bank(강둑)'과 같은 경우에 둘은 다른 뜻을 가진 단어이지만 같은 글자를 사용한 경우, 동음이의어의 경우 이 둘을 아예 다른단어라고 판단하기 부족하다.
+여기서 이 문제를 해결하기 위해 표기에 집중하는 것이 아닌 문맥에 집중하여 임베딩을 한다는 생소한 개념 Contextualized word-embeddings 방법론 , 엘모(Embeddings from Language Model)가 등장한다. 고로 기존의 문맥을 판단하는 지표를 추가적으로 늘리기 위해 Bidirectional Language Model(BILM)을 사용한다.
+이는 문맥을 판단하기 위한 데이터(도구)를 추가로 사용하기 위헤 기존에 Forward Language Model 즉, 순방향으로 문맥을 판단하는 것에 그치지 않고 역방향으로도 문맥을 판단하게끔 Forward Language Model과 Backward Language Model을 합쳐 Bidirectional Language Model, biNM을 사용한다.
+이때, 말했다시피 문맥을 판단하기 위한 데이터(도구)를 늘리기위해 조금의 규칙성이라도 더 고려하기 위해 Backward Language Model을 사용한 것이기에 기존에 우리가 알고있던 양방향 RNN(Bidirectional RNN)과는 다르다.
+기존의 양방향 RNN은 순방향 RNN의 hidden_state와 역방향 RNN의 hidden_state가 연결(concatenate)되어 있었지만, biLM은 Forward Language Model과 Backward Language Model을 아예 분리하여 별개의 모델로 보고 따로 학습한다.(구현은 코드 참고!)
+이는 기존의 임베딩 벡터와 함께 사용될 수 있는데, 준비된 ELMO representation(BILM을 지난 embedding vector)와 GloVe같은 기존의 embedding vector와 함께 concatenate하여 사용한다. 호우! 왜 둘을 연결해서 사용하는지는 잘 모르겠지만 일단 이게 이해 최선

@@ -83,3 +83,5 @@ hidden layer가 추가적으로 존재하는 NNLM과 비교하여 우위를 가�
 사전훈련된 Word2Vec을 google에서 지원해준다.
  네거티브 샘플링은 일반적인 Word2Vec의 학습 후 update시 단어와 관련없는 것까지 업데이트 하는 비효율성을 줄이기기 위한 것으로, 이웃관계인 단어들은 레이블1의 값, 랜덤값은 레이블 0의 값으로 세팅되고
 center word, context word별 embedding layer을 통과하고 그 값이 내적과 label을 비교하여 loss를 update한다.
+ Glove는 LSA(Letent Semantic Analysis), Word2Vec의 기반인 카운트기반, 예측기반을 모두 사용하여 추론하는데, Co-occurence Probabiltity를 사용한다. 
+FastText는 Word2Vec의 모르는단어가 나오면 추론을 못한다는 단점을 보완하여 n-gram으로 subword를 word embedding하여 오타나 희귀단어에 있어 오류를 던지는 Word2Vec보다 강세를 보인다.

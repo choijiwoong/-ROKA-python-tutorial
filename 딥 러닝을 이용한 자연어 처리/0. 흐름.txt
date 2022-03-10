@@ -95,3 +95,7 @@ GloVe는 Word2Vec, LSA에서 window범위내의 단어만 확인하는 것을 Co
 이때, 말했다시피 문맥을 판단하기 위한 데이터(도구)를 늘리기위해 조금의 규칙성이라도 더 고려하기 위해 Backward Language Model을 사용한 것이기에 기존에 우리가 알고있던 양방향 RNN(Bidirectional RNN)과는 다르다.
 기존의 양방향 RNN은 순방향 RNN의 hidden_state와 역방향 RNN의 hidden_state가 연결(concatenate)되어 있었지만, biLM은 Forward Language Model과 Backward Language Model을 아예 분리하여 별개의 모델로 보고 따로 학습한다.(구현은 코드 참고!)
 이는 기존의 임베딩 벡터와 함께 사용될 수 있는데, 준비된 ELMO representation(BILM을 지난 embedding vector)와 GloVe같은 기존의 embedding vector와 함께 concatenate하여 사용한다. 호우! 왜 둘을 연결해서 사용하는지는 잘 모르겠지만 일단 이게 이해 최선
+
+ 문서 벡터를 이용하여 문자간의 비교를 통한 추천 시스템 제작이 가능한데, 문서의 벡터들의 평균을 코사인 유사도에 의거하여 비교가 가능하다. 
+이 과정중 새로 알게된 함수 중 model.fit시 callbacks인자로 callback function설정이 가능한데, loss가 증가할때 멈추는 EarlyStopping과 수시로 weight백업을 만드는 ModelCheckpoint같은 것이 제공된다.
+평균 벡터 말고도 직접 Doc2Vec을 일반적으로 우리가 사용하는 방식(인스턴스화, vocab등록, train)으로  사용할 수 있다. 

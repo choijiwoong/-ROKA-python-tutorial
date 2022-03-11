@@ -109,3 +109,5 @@ label이 이 정상데이터(85%), 스팸(15%)처럼 불균형 할 경우 단순
 또한 이러한 상태를 전반적으로 판단하는데에 matplotlib를 적극 활용하면 좋다. 일반적인 text result의 경우 최대값, 최소값, 평균값(pooling? ㅋ)처럼 특별한 값만 확인하지 전반적인 값을 확인할 순 없는데, 시각화도구를 사용하면 전반적인 데이터의 상태, 분포를 한눈에 파악할 수 있다.
 또한 이러한 시각화는 model evaluation에서 유용한데, 데이터에 적합한 training epoch를 알 수 있다(overfitting 시점 epoch에 따라) 그리하여 추가적인 데이터의 필요성등을 확인하여 더 나은 모델로 모델을 발전시킬 수 있다! 이번 챕터는 느낀게 좀 많네ㅎㅎ
  로이터뉴스사용방법을 알 수 있고 LSTM을 이용하여 분류한다. validation에 사용하는 data와 evaluation에 사용하는 data가 같은데, 데이터의 양이 많다면 둘은 다른 데이터를 사용하는 것이 국룰이다.
+ IMDB리뷰감성분류에 GRU사용하는 예시를 알 수 있는데, LSTM단순화버전에 성능 비슷해서 별거 얻을 건 없음. 그대신 ENN hidden_state, embedding_dim을 추정하는데 감을 잡기위해 한번 RNN별 사항을 정리해보겠음
+SimpleRNNL embedding_dim=32, hidden_units=32 / LSTM: embedding_dim=128, hidden_units=128 / GRU(many-to-one): embeddding_dim=100, hidden_units=128 (대체적으로 embedding_dim과 hidden_units이 비슷한 경향이 있고, 2^라는 경향이 있는듯)

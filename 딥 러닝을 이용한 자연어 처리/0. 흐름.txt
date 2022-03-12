@@ -116,4 +116,6 @@ label이 이 정상데이터(85%), 스팸(15%)처럼 불균형 할 경우 단순
 그 외에는 비슷비슷함ㅋㅋ 다만 실전예제같은 느낌으로 굉장히 호흡이 길고 세심한 작업이 이루어짐에 감탄했음. 전반적으로의 전처리 과정을 조금 정리하면 아래와 같음
 데이터 정제(중복샘플제거)->label의 분포가 균일한지 확인->null값의 존재 유무->regex이용 필터링->null값의 존재유무->(테스트데이터에도 전처리 적용)->토큰화 with 불용어 제거->정수 인코딩(num_words전 비중확인)->빈 샘플 제거->패딩(패딩하며 잘려지는 데이터 분포 확인) 까지가 전처리ㅋㅋ
  Counter을 사용해서 word를 세면 most_common같은 유용한 메서드 사용 가능하다. 그리고 웬만한 오류는 colab이어서 그런거고 오류나면 처음부터 다시 싹 컴파일해봐라!
+Bidirectional LSTM처럼 Bidirectional을 사용하려면 model.add(Bidirectional(LSTM(~처럼 사용하면 된다!
+
 SimpleRNNL embedding_dim=32, hidden_units=32 / LSTM: embedding_dim=128, hidden_units=128 / GRU(many-to-one): embeddding_dim=100, hidden_units=128 / LSTM(네이버리뷰감성): embedding_dim=100, hidden_units=128 / (대체적으로 embedding_dim과 hidden_units이 비슷한 경향이 있고, 2^라는 경향이 있는듯)

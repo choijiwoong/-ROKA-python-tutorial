@@ -187,6 +187,6 @@ def sentiment_predict(new_sentence):#전처리+predict
         print(score,'확률로 긍정리뷰입니다.')
     else:
         print(100-score,'확률로 부정리뷰입니다.')#predict_score의 확률의 의미보단 내가 봤을때 정확도 따지는게 좋을거같아서 조금 바꿈!
-print("이 영화 존나 재밌네ㅋㅋㅋㅋㅋ이게 맞나: ", sentiment_predict("이 영화 존나 재밌네ㅋㅋㅋㅋㅋ이게 맞나"))
-print("아 씨발 좆같네 이걸 영화라고 만드냐 병신들아ㅗㅗ: ", sentiment_predict("아 씨발 좆같네 이걸 영화라고 만드냐 병신들아ㅗㅗ"))
-print("좀 애매한데 좋긴한데 뭔가 엔딩이 맘에 안들어..근데 또 자꾸 생각나긴하네: ", sentiment_predict("좀 애매한데 좋긴한데 뭔가 엔딩이 맘에 안들어..근데 또 자꾸 생각나긴하네"))
+sentiment_predict("이 영화 존나 재밌네ㅋㅋㅋㅋㅋ이게 맞나")
+sentiment_predict("아 씨발 좆같네 이걸 영화라고 만드냐 병신들아ㅗㅗ")
+sentiment_predict("좀 애매한데 좋긴한데 뭔가 엔딩이 맘에 안들어..근데 또 자꾸 생각나긴하네")

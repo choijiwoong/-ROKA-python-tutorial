@@ -137,8 +137,8 @@ for size in kernel_sizes:
     conv=GlobalMaxPooling1D()(conv)
     conv_blocks.append(conv)
 
-output=Concatenate()(conv_blocks) if len(conv_blocks)>1 else conv_blocks[0]#만약 길이가 미달이라면 불필요한 Concatenate없이 바로 conv_block[0]반환
-output=Dropout(dropout_ratio)(output)
+output=Concatenate()(conv_blocks) if len(conv_blocks)>1 else conv_blocks[0]#만약 길이가 미달이라면 불필요한 Concatenate없이 바로 conv_block[0]반환. 근데 풀어쓰면 안되나?
+output=Dropout(dropout_ratio)(output)#Dense전 Dropout
 model_output=Dense(len(label_idx), activation='softmax')(output)
 model=Model(model_input, model_output)
 

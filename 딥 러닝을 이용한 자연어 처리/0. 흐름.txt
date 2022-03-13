@@ -137,6 +137,9 @@ padding하고 validation_data split하고 사전 훈련된 GloVe를 가져와 �
 BiLSTM의 구현은 many-to-one구조로 유사하게 순방향LSTM의 마지막 timestep의 hidden_state와 역방향LSTM의 첫번째 timestep의 hidden_state를 concatenate하여 이 벡터를 Character-level representation으로 해당 단어의 벡터로 사용한다.
 이러한 문자 임베딩은 워드 임베딩의 대체제 혹은 문자 임베딩과 워드 임베딩을 concatenate하여 또다른 신경망의 입력으로 사용되기도 한다.
 
-[태깅작업(Tagging Task)]
-
 IMDB: embedding_dim=256, num_filters=256, kernel_size=3 / 스팸메일: embedding_dim=32, num_filters=32, kernel_size=5 / 네이버영화리뷰: embedding_dim=128, num_filters=128, kernel_size=3~5 / 
+
+[태깅작업(Tagging Task)]
+태깅작업으로는 Named Entity Recognition, Part-of-Speech Tagging이 있으며, pair을 가진다는 특징이 있다. 또한 입력 시퀀스에 쌍을 이루는 레이블 시퀀스를 구성하는 작업을 Sequence Labeling Task라고 하며, 태깅의 경우 many-to-many구조이기에 RNN의 return_seqeunces=True로 하여 처리한다.
+zip()함수에 *이 사용되면 unzip을 의미하며, BiLSTM으로 Pos_tagger을 만들 때 TimeDistributed()를 이용해 weight update를 향상시킬 수 있으며, one-hot encoding이 아닌 integer encoding과 sparse_categorical_crossentropy를 사용하여 순서관계를 보다 잘 나타낼 수 있다.
+결론적으로 굉장히 단순한 구조로 문자 임베딩도 아니고 단어 임베딩으로 pos tagging을 진행하지만 BiLSTM을 사용하므로서 문맥정보를 반영하여 추론하게 하여 보다 성능이 좋은 pos_tagger를 만들 수 있게 한다.

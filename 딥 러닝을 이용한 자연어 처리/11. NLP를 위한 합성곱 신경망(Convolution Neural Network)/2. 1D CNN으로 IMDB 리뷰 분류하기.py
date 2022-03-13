@@ -37,7 +37,7 @@ model.add(Dense(hidden_units, activation='relu'))#출력이 hidden_units(128)
 model.add(Dropout(dropout_ratio))
 model.add(Dense(1, activation='sigmoid'))#그리고 그 128이 1개로 by sigmoid
 
-es=EarlyStopping(monitor='val_liss', mode='min', verbose=1, patience=3)
+es=EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=3)
 mc=ModelCheckpoint('best_model.h5', monitor='val_acc', mode='max', verbose=1, save_best_only=True)
 
 model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['acc'])

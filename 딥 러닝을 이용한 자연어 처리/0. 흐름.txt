@@ -128,3 +128,5 @@ kernel이 가중치로서 학습되며, bias역시 추가가 가능한데 이는
  자연어 처리를 위해선 embedding vector가 필요한데, 너비가 고정되어 커널의 높이설정만으로 위아래로 움직이는 1D convolution으로 embedding vector의 획득이 가능하다. 
 풀링은 1D convolution에서 embedding vector의 최댓값을 꺼내온다. Keras구현시 이진분류이지만 softmax를 사용하여 2개의 출력층 뉴런을 가지며, 여러 커널로 이미지 conv를 통해 얻은 값들을 concatenate하여 출력층의 입력으로 사용한다.
  1D CNN으로 text분류시 hyperparameter는 embedding_dim, dropout_ratio, num_filters, kernel_size, hidden_units정도 되고 Conv뒤 Pooling을 거치면 Scalar가 되기에 다음 input_dim고려는 num_filters에만 의존하면 된다는 거 정도 괜춘.
+
+IMDB: embedding_dim=256, num_filters=256, kernel_size=3 / 스팸메일: embedding_dim=32, num_filters=32, kernel_size=5

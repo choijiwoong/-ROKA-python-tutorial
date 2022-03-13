@@ -183,7 +183,7 @@ def sentiment_predict(new_sentence):
     if (score>0.5):
         print('{:.2f}% 확률로 긍정리뷰입니다.'.format(score*100))
     else:
-        print("{:.2f}% 확률로 부정리뷰입니다.".fotmat((1-score)*100))
+        print("{:.2f}% 확률로 부정리뷰입니다.".format((1-score)*100))
 sentiment_predict("이 게임 개발자 현재 수온체크중이었으면")
 sentiment_predict("ㄹㅇ 인생게임ㅋㅋㅋ시간 살살녹노!")
 sentiment_predict("좆같이 재밌네 진짜 이거만 하다가 인생 망할거같이 재밌다 오늘하루도 한게없네ㅠㅠ")

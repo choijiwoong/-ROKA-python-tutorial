@@ -129,5 +129,9 @@ kernel이 가중치로서 학습되며, bias역시 추가가 가능한데 이는
 풀링은 1D convolution에서 embedding vector의 최댓값을 꺼내온다. Keras구현시 이진분류이지만 softmax를 사용하여 2개의 출력층 뉴런을 가지며, 여러 커널로 이미지 conv를 통해 얻은 값들을 concatenate하여 출력층의 입력으로 사용한다.
  1D CNN으로 text분류시 hyperparameter는 embedding_dim, dropout_ratio, num_filters, kernel_size, hidden_units정도 되고 Conv뒤 Pooling을 거치면 Scalar가 되기에 다음 input_dim고려는 num_filters에만 의존하면 된다는 거 정도 괜춘.
  Multi-Kernel CNN사용시 functional API기반 모델이므로 for문으로 쉽게 모델을 표현할 수 있다는 장점이 있고, 그 결과들을 list에 append해뒀다가 Concatenate()로 합쳐서 사용하는 방법에 유의. Concatenate도 일반적인 functional 버전 model.add()처럼 z=Concatenate()(conv_blocks)처럼 하면 된다.(괄호로)
+ 의도 분류하는데에 일단 이진분류가 아니라 label처리도 해야하는데, preprocessing.LabelEncoder로 쉽게 가능하고, 이를 기반으로 train & test의 label데이터를 integer encoding함. 그리고 마찬가지로 intent_train을 tokenizer에 등록해서 integer encoding하고
+padding하고 validation_data split하고 사전 훈련된 GloVe를 가져와 저장하고 vocab에 해당하는 embedding_vector를 모아 따로 matrix를 만들었음. 그리고 모델을 설계할때 Embedding에서 weight로 그 행렬을 설정하고, trainable=False로 하여 GloVe embedding_vector를 고정적으로 사용함.
+그렇게 Multi-Conv 사용하니까 정확도가 99프로 나옴. 그리고 유의해야하는건 one-hot encoding을 수행했고 그로인해 softmax를 사용하는데, intent category가 여러개라 그 확률들을 나타내기위해서 label들을 다 one-hot encoding함. 그리고 train데이터들은 차피 모델지나며 softmax지날테니 상관없고.
+그리고 개인적으로 fitting이전에 웬만한 데이터들의 shape들을 확인하는 습관을 들으면 정말로 좋을거같고 나중에 model evaluation, summary시에 plot을 accuracy뿐이 아닌 loss도 같이 표시해서 최대한 유용한 정보를 많이 얻는 습관도 굉장히 좋아보임.
 
 IMDB: embedding_dim=256, num_filters=256, kernel_size=3 / 스팸메일: embedding_dim=32, num_filters=32, kernel_size=5 / 네이버영화리뷰: embedding_dim=128, num_filters=128, kernel_size=3~5 / 

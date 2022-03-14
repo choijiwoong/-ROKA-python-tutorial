@@ -126,10 +126,26 @@ print('테스트 샘플 레이블의 크기: ', y_test.shape, '\n')
  #4. 양방향 LSTM(Bi-directional LSTM)으로 개체명 인식기 만들기
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Embedding, LSTM, Bidirectional, TimeDistributed
-from tensorflow.kera.optimziers import Adam
+from tensorflow.keras.optimizers import Adam
 
 embedding_dim=128
 hidden_units=128
 
 model=Sequential()
 model.add(Embedding(input_dim=vocab_size, output_dim=embedding_dim, input_length=max_len, mask_zero=True))#input_dim과 input_length 햇갈리지 말자!
+model.add(Bidirectional(LSTM(hidden_units, return_sequences=True)))
+model.add(TimeDistributed(Dense(tag_size, activation='softmax')))
+
+model.compile(loss='categorical_crossentropy', optimizer=Adam(0.001), metrics=['accuracy'])
+model.fit(X_train, y_train, batch_size=128, epochs=8, validation_data=(X_test, y_test))
+print('\n테스트 정확도: ', model.evaluate(X_test, y_test)[1])
+
+#check
+i=10#index for test
+y_predicted=model.predict(np.array([X_test[i]]))#X_test값의 예측값
+y_predicted=np.argmax(y_predicted, axis=-1)#tag들의 확률을 나타내는 확률벡터들을 정수 레이블로 변경한다.
+labels=np.argmax(y_test[i], -1)#tag정보를 나타내는 원-핫 벡터를 그냥 그 tag의 인덱스 정보를 갖는 정수 인코딩으로 변경한다.
+print("{:15}|{:5}|{}".format("단어", "실제값", "예측값"))
+for word, tag, pred in zip(X_test[i], labels, y_predicted[0]):
+    if word != 0: # PAD값은 제외함.
+        print("{:17}: {:7} {}".format(index_to_word[word], index_to_ner[tag].upper(), index_to_ner[pred].upper()))

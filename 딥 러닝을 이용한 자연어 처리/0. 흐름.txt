@@ -143,3 +143,9 @@ IMDB: embedding_dim=256, num_filters=256, kernel_size=3 / 스팸메일: embeddin
 태깅작업으로는 Named Entity Recognition, Part-of-Speech Tagging이 있으며, pair을 가진다는 특징이 있다. 또한 입력 시퀀스에 쌍을 이루는 레이블 시퀀스를 구성하는 작업을 Sequence Labeling Task라고 하며, 태깅의 경우 many-to-many구조이기에 RNN의 return_seqeunces=True로 하여 처리한다.
 zip()함수에 *이 사용되면 unzip을 의미하며, BiLSTM으로 Pos_tagger을 만들 때 TimeDistributed()를 이용해 weight update를 향상시킬 수 있으며, one-hot encoding이 아닌 integer encoding과 sparse_categorical_crossentropy를 사용하여 순서관계를 보다 잘 나타낼 수 있다.
 결론적으로 굉장히 단순한 구조로 문자 임베딩도 아니고 단어 임베딩으로 pos tagging을 진행하지만 BiLSTM을 사용하므로서 문맥정보를 반영하여 추론하게 하여 보다 성능이 좋은 pos_tagger를 만들 수 있게 한다.
+ 역시 사람은 반복학습이라고 전에 사실 제대로 이해안됐었는데 이번에 제대로 이해했고 일단 BIO표현을 이해하는 것이 중요해 보임. 전처리는 지금까지 해온 전처리와 같지만 개체명 인식에서 중요한 것은 Sequence Labeling Task인 듯 함.
+우선 작업 처리하기 편하게 단어: Tag식으로 전처리 한다음에 zip(*)으로 Sequence Labeling task를 통하여 실제 훈련에 사용한 X_data와 y_data를 제작하는 역활을 함. 그다음 마찬가지로 padding하고 texts_to_sequences하는데, BIO특성상 OOV token이 있을 수 있으니 "PAD"로 바꾼다든지 어느정도의 데이터프레임의 이해가 뒷받침되어야 할듯
+무튼 원-핫 인코딩을 사용했는데 아직 정수 인코딩 sparse학습과의 사용타이밍 구분은 잘 모르겠고, many-to-many구조를 사용하기에 각 timestep마다 출력층을 사용함. 이때 단순히 return_sequences만 True로 설정하는게아니라
+TimeDistributed를 Embedding layer에 사용하는데, 이는 내부적으로 각 timestep별로도 weight update를 진행하는거임. 근데 many-to-many구조의 경우 기 timestep마다 사용할 정보들이 담겨있을테니 보다 정확한 데이터를 위해 사용함.
+그리고 이러한 tagging작업에선 솔직히 BIO표기 시 trash값 O가 많기에 이를 연산에서 배제시키도록 하는 인자 mask_zero=True를 Embedding에서 사용할 수 있음. 그리고 모든 training이 종료 된 후 기존 evaluation 기준인 accuracy의 경우
+O Tag가 너무 많다보니 prediction을 다 O으로 해도 정확도가 75%정도 나와서 training의 혼란을 야기할 수 있기에 정답이라고 예측한 것 중 실제인 것, 특정 개체중에서 실제인 것을 의미하는 precision과 recall의 조화평균값을 사용하는데, 이는 f1-score라고 부르며 seqeval 패키지에서 사용가능함! 아이고 호흡 길다

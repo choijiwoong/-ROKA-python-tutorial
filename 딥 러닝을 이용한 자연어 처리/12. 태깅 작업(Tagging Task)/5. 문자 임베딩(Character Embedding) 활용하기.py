@@ -191,3 +191,121 @@ char embedding을 진행하는데 전꺼에 있는 데이터를 여기저기서 
  아니 뭐 char embedding은 그렇다 치는데 그 결과에 왜 Conv1D를 수행하는거지..? char embedding을 통한 결과가 단어 정보라 그 출력을
 단어라고 생각해서 1D CNN으로 IMDB리뷰분석하기처럼 단어에 적용하는거같다. 일단 여기까지!!!!"""
     #[3. BiLSTM-CNN-CRF]
+embedding_dim=128
+char_embedding_dim=64
+dropout_ratio=0.5
+hidden_units=256
+num_filters=30
+kernel_size=3
+
+#word embedding
+word_ids=Input(shape=(None,), dtype='int32', name='words_input')
+word_embeddings=Embedding(input_dim=vocab_size, output_dim=embedding_dim)(word_ids)
+
+#char embedding
+char_ids=Input(shape=(None, max_len_char,), name='char_input')
+embed_char_out=TimeDistributed(Embedding(len(char_to_index), char_embedding_dim, embeddings_initializer=RandomUniform(minval=-0.5, maxval=0.5)), name='char_embedding')(char_ids)
+dropout=Dropout(dropout_ratio)(embed_char_out)
+
+#Conv1D to char embedding
+conv1d_out=TimeDistributed(Conv1D(kernel_size=kernel_size, filters=num_filters, padding='same', activation='tanh', strides=1))(dropout)
+maxpool_out=TimeDistributed(MaxPooling1D(max_len_char))(conv1d_out)
+char_embeddings=TimeDistributed(Flatten())(maxpool_out)
+char_embeddings=Dropout(dropout_ratio)(char_embeddings)
+
+#concat
+output=concatenate([word_embeddings, char_embeddings])
+
+#LSTM
+output=Bidirectional(LSTM(hidden_units, return_sequences=True, dropout=dropout_ratio))(output)
+
+#output layer
+output=TimeDistributed(Dense(tag_size, activation='relu'))(output)
+
+base=Model(inputs=[word_ids, char_ids], outputs=[output])
+model=CRFModel(base, tag_size)
+model.compile(optimizer=tf.keras.optimizers.Adam(0.001), metrics='accuracy')
+
+es=EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=4)
+mc=ModelCheckpoint('bilstm_cnn_crf/cp.ckpt', monitor='val_decode_sequence_accuracy', mode='max', verbose=1, save_best_only=True, save_weights_only=True)
+
+#CRF는 one-hot encoding지원 X(keras)
+history=model.fit([X_train, X_char_train], y_train_int, batch_size=128, epochs=15, validation_split=0.1, callbacks=[mc, es])
+
+#test model
+model.load_weights('bilstm_cnn_crf/cp.ckpt')
+
+i=13
+y_predicted=model.predict([np.array([X_test[i]]), np.array([X_char_test[i]])])[0]
+labels=np.argmax(y_test[i], -1)
+
+print("{:15}|{:5}|{}".format("단어", "실제값", "예측값"))
+print(35 * "-")
+
+for word, tag, pred in zip(X_test[i], labels, y_predicted[0]):
+    if word!=0:
+        print("{:17}: {:7} {}".format(index_to_word[word], index_to_ner[tag], index_to_ner[pred]))
+
+#check F1-Score(performance)
+y_predicted=model.predict([X_test, X_char_test])[0]
+pred_tags=sequences_to_tag_for_crf(y_predicted)
+test_tags=sequences_to_tag(y_test)
+
+print('F1-score: {:.1%}'.format(f1_score(test_tags, pred_tags)))
+print(classification_report(test_tags, pred_tags))
+
+    #[4. BiLSTM-BiLSTM-CRF]
+embedding_dim=128
+char_embedding_dim=64
+dropout_ratio=0.3
+hidden_units=64
+
+#word embedding
+word_ids=Input(batch_shape=(None, None), dtype='int32', name='word_input')
+word_embeddings=Embedding(input_dim=vocab_size, output_dim=embedding_dim, name='word_embedding')(word_ids)
+
+#char embedding
+char_ids=Input(batch_shape=(None, None, None), dtype='int32', name='char_input')
+char_embeddings=Embedding(input_dim=(len(char_to_index)), output_dim=char_embedding_dim, embeddings_initializer=RandomUniform(minval=-0.5, maxval=0.5), name='char_embedding')(char_ids)
+
+#char embedding to BiLSTM & concat with word embedding
+char_embeddings=TimeDistributed(Bidirectional(LSTM(hidden_units)))(char_embeddings)#굉장히 간단하게만 연결하네?
+output=concatenate([word_embeddings, char_embeddings])#concat완료
+
+#LSTM
+output=Dropout(dropout_ratio)(output)
+output=Bidirectional(LSTM(units=hidden_units, return_sequences=True))(output)
+
+#output_layer
+output=TimeDistributed(Dense(tag_size, activation='relu'))(output)
+
+base=Model(inputs=[word_ids, char_ids], outputs=[output])
+model=CRFModel(base, tag_size)
+model.compile(optimizer=tf.keras.optimizers.Adam(0.001), metrics='accuracy')
+
+es=EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=4)
+mc=ModelCheckpoint('bilstm_bilstm_crf/cp.ckpt', monitor='val_secode_sequence_accuracy', mode='max', verbose=1, save_best_only=True, save_weights_only=True)
+
+history=model.fit([X_train, X_char_train], y_train_int, batch_size=128, epochs=15, validation_split=0.1, callbacks=[mc, es])
+
+#test model
+model.load_weights('bilstm_bilstm_crf/cp.ckpt')
+
+i=13
+y_predicted=model.predict([np.array([X_test[i]]), np.array([X_char_test[i]])])[0]
+labels=np.argmax(y_test[i], -1)
+
+print("{:15}|{:5}|{}".format("단어", "실제값", "예측값"))
+print(35 * "-")
+
+for word, tag, pred in zip(X_test[i], labels, y_predicted[0]):
+    if word!=0:
+        print("{:17}: {:7} {}".format(index_to_word[word], index_to_ner[tag], index_to_ner[pred]))
+
+#check F1-score
+y_predicted=model.predict([X_test, X_char_test])[0]
+pred_tags=sequences_to_tag_for_crf(y_predicted)
+test_tags=sequences_to_tag(y_test)
+
+print('F1-score: {:.1%}'.format(f1_score(test_tags, pred_tags)))
+print(classification_report(test_tags, pred_tags))

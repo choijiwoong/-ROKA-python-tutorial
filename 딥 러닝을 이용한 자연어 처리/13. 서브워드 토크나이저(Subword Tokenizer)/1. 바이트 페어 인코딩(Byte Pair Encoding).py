@@ -63,7 +63,7 @@ for i in range(num_merges):
 
     print('new merge:', best)
     print('dictionary: ', dictionary)
-print('\n\nmerge의 기록 출력: ', bpe_codes)
+print('\n\nmerge의 기록 출력: ', bpe_codes,'\n')
 
 
 #4. OOV에 대처하기
@@ -71,13 +71,13 @@ def get_pairs(word):#그냥 word의 pair들의 set을 반환
     pairs=set()
     prev_char=word[0]
     for char in word[1:]:
-        pair.add((prev_char, char))
+        pairs.add((prev_char, char))
         prev_char=char
     return pairs
 
-def encode(orig):#단어가  들어가려나?
+def encode(orig):#단어가  들어가려나? ㅇㅇ
     word=tuple(orig)+('</w>',)
-    display(Markdown("__word split into characters:__ <tt>{}</tt>".format(word)))
+    print("__word split into characters:__ <tt>{}</tt>".format(word))
 
     pairs=get_pairs(word)
 
@@ -87,10 +87,10 @@ def encode(orig):#단어가  들어가려나?
     iteration=0
     while True:
         iteration+=1
-        display(Markdown("__Iteration {}:__".format(iteration)))#몇번째 iteration인지 출력
+        print("__Iteration {}:__".format(iteration))#몇번째 iteration인지 출력
         print('bigrams in the word: ', pairs)#단어 안에 있는 bigram(pair)를 출력
 
-        bigram=min(pairs, key=lambda pair: bpe_codes.get(pair, float('inf')))#bpe_codes(merge log)에서 가장 최근에 된 값(0부터 indexing되니)
+        bigram=min(pairs, key=lambda pairs: bpe_codes.get(pairs, float('inf')))#bpe_codes(merge log)에서 가장 최근에 된 값(0부터 indexing되니)
         print('candidate for merging:' ,bigram)
 
         if bigram not in bpe_codes:#만약 여기에 없다면(thanks to defautdict, 위에서 0출력하고 오류없음)
@@ -100,5 +100,47 @@ def encode(orig):#단어가  들어가려나?
         first, second=bigram
         new_word=[]
         i=0
-        #부터!
-            
+        while i<len(word):#char별 반복
+            try:
+                j=word.index(first, i)#first가 word에 어디index에 위치하는지
+                new_word.extend(word[i:j])#new_word에 i(현재char)~(first위치)를 append
+                i=j#i조작
+            except:
+                new_word.extend(word[i:])#끝에 달했다면 나머지 그냥 append
+                break
+
+            if word[i]==first and i<len(word)-1 and word[i+1]==second:#모든게 완벽하다면? 뭔가 위에 try부분이 well compile시
+                new_word.append(first+second)#merge?하여 append하고
+                i+=2
+            else:#뭔가 except시
+                new_word.append(word[i])
+                i+=1
+        new_word=tuple(new_word)#tuple화
+        word=new_word#대체
+        print('word after merging', word)
+        if len(word)==1:
+            break
+        else:
+            pairs=get_pairs(word)
+
+    if word[-1]=='</w>':#for 출력X
+        word=word[:-1]
+    elif word[-1].endswith('</w>'):#만약 </w> 접미사로 끝나면
+        word=word[:-1]+(word[-1].replace('</w>',''),)#접미사 변경
+
+    return word
+#단어를 bigrams로 만든다음에 get_pair을 통해 빈도수 기반 merging을 수행할 pair를 결정한다. 그 후 merge라고 변환된 단어를 리턴한다.
+encode("loki")#서브워드 단어 집합에 lo가 존재하기에 lo를 유지, 나머지 분리
+encode('lowest')#서브워드에 low와 est가 존재, 이들을 분리
+encode('lowing')#서브워드에 low가 존재 
+encode('highing')#서브워드에도 안존재. 모든 char가 분리.
+
+#씨발 한도제한 계좌ㅗ 시간을 얼마나 버린거야
+    """[3. WordPiece Tokenizer]
+BPE의 변형 알고리즘으로 BPE가 빈도수 기반으로 쌍을 선택해 병합하는 것과 달리, 병합되었을때의 코퍼스의 우도(Likelihoos)를 가장 높이는 쌍을 병합한다
+WordPiece Tokenizer는 모든 단어의 맨 앞에 _를 붙이고, 단어는 서브워드 통계에 기반하여 띄어쓰기로 분리한다. _는 문장 복원을 위한 장치이다
+BERT를 훈련시키기위해서도 사용된다.
+
+    [4.Unigram Language Model Tokenizer]
+각 서브워드들의 loss를 계산하는 것으로, lsos는 서브워드가 vocab에서 제거되었을때 코퍼스의 우도(Liktlihood)가 감소하는 정도를 말한다.
+서브워드들을 loss기준 정렬하여 최악의 10~20%의 토큰을 제거하여 vocab크기를 맞출때까지 반복한다."""

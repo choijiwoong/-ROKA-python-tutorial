@@ -152,4 +152,25 @@ O Tag가 너무 많다보니 prediction을 다 O으로 해도 정확도가 75%�
  CRF(Conditional Random Field)는 기존 BiLSTM모델에서 BIO제약사항들을 고려하지 않아 비효율적이라는 점을 개선하기 위한 것으로 LSTM의 활성화 함수 결과를 입력으로 사용하여 BIO의 제약사항들을 학습할 수있게 한다. 다만 keras-crf가 one-hot vector를 지원하지 않아 Integer encoding을 사용한다.
 흐름을 굉장히 귀찮기에 대충 정리하면 이라고 하려했는데 이미 CRF까지 되어있고만 과거의 성실한 나 칭찬해! 별거없음 .마지막에는 어느 모델이 실제 개체명 태깅에 효율적일지 이것저것 해보는 걸로 LSTM+CNN, BiLSTM+CNN+CRF, BiLSTM+BiLSTM+CRF 이런느낌으로 F1-score측정해보는게 다임
 
-[서브워드 토크나이저(Subword Tokenizer)]
+-------------------------심화과정-------------------------------------
+
+[서브워드 토크나이저(Subword Tokenizer)]_원래 여기부터 귀찮아서 안하려다가 굉장히 유용한 모듈들의 간단한 사용법을 알려주는거같아 사용법과 개념을 간단히 lookup table처럼 사용할 목적으로 정리.
+ 1) 바이트 페어 인코딩 
+뛰어난 모델이더라도 vocab에 없는 단어가 들어오면 까다로워지는 문제 OOV(Out-Of Vocabulary)문제를 해결하기 위한 여러 기법중 대표적인 것이 서브워드 분리(Subword Segmentation)으로 완화하는 것이다.
+이러한 작업을 하는토크나이저가 서브워드 토크나이저고, 이 서브워드 분리 알고리즘으로 대표적인 것이 BPE(Byte Pair Encoding)기법이다. 실제 이 기법은 반복되는 것에 대한 치환에 기반을 두지만, 자연어처리에서는 글자(character)에서 점차 단어집합(vocabulary)를 만들어내는 Bottom Up방식의 접근을 의미한다.
+훈련 데이터의 단어를 chracters 혹은 unicode단위로 vocabulary를 만들고, 빈도수 기반으로 유니그램들을 merge하는 것이다. (각 단어의 frequency를 각 char에 할당하고, 입력된 sentence에 대하여 모든 pair가능한 경우 중 가장 char의 frequency합이 큰 것을 기준으로.)
+이 외에도 위의 BPE(Bytes Pair Encoding)을 참고하여 제작된 Wordpiece Tokenizer나 unigram Language Model Tokenizer 등의 서브워드 분리 알고리즘이 존재한다.
+ 간단하게 설명하면 WordPiece Tokenizer은 기존의 BPE가 빈도수를 기반으로 pair을 merge한 것과 달리, 병합 시 corpus의 우도(Likelihood_가능성)를 높이는 pair을 찾아 merge한다. (참고로 띄어쓰기는 _로 치환하여 구분자 space와 구분하고, BERT훈련에 이 알고리즘이 사용되기도 했다.)
+Unigram Language Model Tokenizer은 각 서브워드들을 vocab에서 제거 시 corpus의 우도(Likelihood)가 감소되는 정도 즉, 손실(loss)를 계산하여 최악의 영향을 미치는 10~20%의 토큰을 제거하여 vocab_size를 조정하며 vocab을 만드는 알고리즘이다.
+
+ 2) 센텐스피스(SentencePiece): import sentencepiece as spm
+BPE와 같은 여러 서브워드 토크나이징 알고리즘을 내장한 패키지이다. 토큰화 없이 전처리를 하지않은 데이터에 바로 사용된다. 
+spm.SentencePieceTrainer.Train('--input=imdb_review.txt --model_prefix=imdb --vocab_size=500 --model_type=bpe --max_sentence_length=9999') #input데이터를 size5000의 BPE모델을 만든다.(이름: imdb) 즉, 데이터를 기반으로 서브워드들을 학습한다.(imdb.model, imdb.vocab파일 생성)
+sp=spm.SentencePieceProcessor()#실제 사용하기위한 프로세서 인스턴스화.
+sp.load("imdb.model")#학습된 모델을 로드
+위의 과정을 기본으로 사용 준비를 마치며, encode_as_pieces(), encode_as_ids(), GetPieceSize(), IdToPiece(), PieceToId(), DecodeIds(), DecodePieces, encode()등의 기능을 지원한다.
+
+ 3) 서브워드텍스트인코더(SubwordTextEncoder): import tensorflow_datasets as tfds
+BPE와 유사한 Wordpiece Model을 채틱한 텐서플로우 서브워드 토크나이저이다.
+tokenizer=tfds.features.text.SubwordTextEncoder.build_from_corpus(data, target_vocab_size=2**13)#과 같이 데이터를 학습시킬 수 있다. 일반적인 keras의 tokenizer처럼 바로 인스턴스화된다.
+tokenizer의 함수 subwords[index], encode(data), decode(encoded_data), vocab_size등의 기능을 사용할 수  있다.

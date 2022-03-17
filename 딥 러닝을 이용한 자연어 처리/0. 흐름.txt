@@ -174,3 +174,12 @@ sp.load("imdb.model")#학습된 모델을 로드
 BPE와 유사한 Wordpiece Model을 채틱한 텐서플로우 서브워드 토크나이저이다.
 tokenizer=tfds.features.text.SubwordTextEncoder.build_from_corpus(data, target_vocab_size=2**13)#과 같이 데이터를 학습시킬 수 있다. 일반적인 keras의 tokenizer처럼 바로 인스턴스화된다.
 tokenizer의 함수 subwords[index], encode(data), decode(encoded_data), vocab_size등의 기능을 사용할 수  있다.
+
+ 4) 허깅페이스 토크나이저(Huggingface Tokenizer): from tokenizers import BertWordPieceTokenizer, ByteLevelBPETokenizer, CharBPETokenizer, SentencePieceBPETokenizer
+BERT의 WordPiece Tokenizer을 허깅페이스 회사에서 만든 짝퉁이다. 위의 임포트 다른거는 bytelevel, original, sentencepiece와 호환되는 토크나이저종류들이다.
+tokenizer=BertWordPieceTokenizer()# 인스턴스화하고
+tokenizer.train(files=data_file, vocab_size=vocab_size, limit_alphabet=limit_alphabet, min_frequency=min_frequency)#와 같이 학습시킨다. 
+tokenizer.save_model()#로 vocab을 저장할 수 있다.(수직데이터이기에 pd.read_fwf사용 요망)
+기능으로는 encoded=tokenizer.encode(sentence)로 문장을 인코드하면 encoded.tokens, encoded.ids로 해당 sentence의 변환결과 접근이 가능하고, 디코드는 tokenizer.decode()를 사용하면 된다.
+
+[RNN을 이용한 인코더-디코더]

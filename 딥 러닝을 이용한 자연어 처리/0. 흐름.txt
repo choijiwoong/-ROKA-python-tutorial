@@ -200,3 +200,8 @@ PPL(Perplecity)로 Language Model의 성능을 평가했었지만, 번역의 성
 기계번역과 사람번역에 길이 차이에따라 값에 패널티를 부과하는 Brevity Penalty를 BLEU에 적용하여 향상시켰고, 이는 nltk.translate.bleu_score에서 사용이 가능하다.
 
 [어텐션 메커니즘(Attention Mechanism)]
+ 1) 어텐션 메커니즘
+seq2seq의 context vector의 정보손실, RNN의 고전적인 Vanishing gradient를 보완하기 위한 것으로, Attention function을 이용하여 디코더에서 출력단어 예측 시 인코더의 전체 입력 문장을 현재 decoder의 timestep에 연관성을 고려하여 반영하는 것이다.
+Current Decoder's hidden_state를 Encoder의 모든 timestep hidden_state와 중간수식연산(dot-product)한 값을 softmax를 거치게 해 현재 timestep에서 decoder cell에 미치는 확률인 Attention Distribution(의 각 값을 Attention Weight라고 함.)을
+decoder의 hidden_state와 가중합(곱하여 합계)한 값을 Attention Value(Context Vector_참고로 seq2seq의 context vector와 다른것이다)이라고 하고, 이를 decoder의 hidden_state와 concatenate하고 tanh를 거쳐 다음 cell의 입력으로 넣는다.
+즉, decoder의 cell은 hidden_state, cell_state외에도 이 Attention_value까지 총 3개의 입력을 받는것이다.

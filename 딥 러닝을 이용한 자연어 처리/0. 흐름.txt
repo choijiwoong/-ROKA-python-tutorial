@@ -188,4 +188,8 @@ RNN2개를 인코더, 디코더로 서로 연결하여 사용하는 걸로, 입�
 디코더는 <SOS>~<EOS>까지 예측하는데, 훈련시 하나의 cell이 잘못 예측하면 뒤의 셀들도 연쇄적으로 잘못 학습된다는 것을 방지하기 위해 decoder의 input을 주어 셀하나하나 훈련시키는 teacher forcing을 사용한다. 고로 실제 테스트시에는 decorder_input을 따로 받지 않고 전 state를 받게 설계한다.(<EOS>필요없음. 어차피 전꺼받음)
 디코더의 각 timestep별 출력은 Dense, Softmax를 거쳐 vocab확률벡터가 출력되게끔 한다. 이러한 Character-Level Machine Translation을 위해서는 두개 이상의 언어가 병렬적으로 구성된 코퍼스, parallel corpus가 필요하다.
 
- 2)
+ 2) Word-Level 번역기 만들기
+마찬가지로 urllib3.PoolManager()의 request를 사용하여 데이터 다운을 보다 쉽게 하며, char-level이 아닌 word-level이기에 Tokenizer을 사용하여 vocab을 생성한다. 
+padding은 따로 Masking층을 두어 고려를 안할것이기에 별도의 padding_size를 설정하지는 않았으며, 전반적인 machine구조에 초점을 맞추었으면 한다.
+훈련시 Encoder: input->embedding->masking->lstm->state, Decoder: input->embedding->masking->lstm(with Encoder state)->dense->output이며, Model생성 시 ([encoder_inputs, decoder_inputs], decoder_outputs)꼴로 넣는다. 즉 결과를 states_value꼴로 받는다.
+작동시 Encoder: 동일, Decoder: [decoder_state_input_h, decoder_state_input_c]꼴의 input->embedding->lstm(with Encoder state)->dense->output이며, Model생성 시 ([decoder_inputs]+decoder_states_inputs, [decoder_outputs2]+decoder_states2)꼴로 넣는다. 즉 결과를 output_tokens, h, c꼴로 받는다.

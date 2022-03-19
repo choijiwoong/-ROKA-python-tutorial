@@ -51,8 +51,8 @@ src_vocab=set()
 for line in lines.src:
     for char in line:
         src_vocab.add(char)
+        
 tar_vocab=set()
-
 for line in lines.tar:
     for char in line:
         tar_vocab.add(char)
@@ -122,5 +122,74 @@ import numpy as np
 encoder_inputs=Input(shape=(None, src_vocab_size))
 encoder_lstm=LSTM(units=256, return_state=True)
 
-encoder_outputs, state_h, state_c=encoder_lstm(encoder_inputs)
-encoder_states=[state_h, state_c]
+encoder_outputs, state_h, state_c=encoder_lstm(encoder_inputs)#functinoal. LSTM이기에 output과 hidden_state, cell_state를 반환한다.
+encoder_states=[state_h, state_c]#이 둘을 통째로 decoder에 전달할 목적이다.
+
+
+decoder_inputs=Input(shape=(None, tar_vocab_size))
+decoder_lstm=LSTM(units=256, return_sequences=True, return_state=True)
+
+decoder_outputs, _, _=decoder_lstm(decoder_inputs, initial_state=encoder_states)#encoder_output's state[hidden_state, cell_state]를 decoder's initial_state로 전달.
+
+decoder_softmax_layer=Dense(tar_vocab_size, activation='softmax')#Dense Layer with softmax
+decoder_outputs=decoder_softmax_layer(decoder_outputs)
+
+
+model=Model([encoder_inputs, decoder_inputs], decoder_outputs)#Encoder의 state를 Decoder에 전달하는 구조. 나머지는 각각 input을 받는 점에서 같음.(훈련)
+model.compile(optimizer='rmsprop', loss='categorical_crossentropy')
+
+model.fit(x=[encoder_input, decoder_input], y=decoder_target, batch_size=64, epochs=40, validation_split=0.2)
+#과적합이 유발된다! 하지만 데이터의 양과 태스크의 특성으로 훈련정확도와 과적합방지를 모두 할 수 없다. 대신, seq2seq의 작동방식과 짧은문장과 긴문장에서의 성능차이를 확인하는 것에 초점을 맞춘다.**
+
+ #4. seq2seq기계 번역기 동작시키기_훈련방식과 다르다! 
+#입력문장을 인코더에 넣어 상태를 얻고, <SOS>('\t')을 디코더로 보낸 뒤 <EOS>('\n')까지 다음문자를 예측하게 한다.
+encoder_model=Model(inputs=encoder_inputs, outputs=encoder_states)
+
+#이전 시점의 상태들 저장용
+decoder_state_input_h=Input(shape=(256,))#초기에 encoder의 last timestep state input예정
+decoder_state_input_c=Input(shape=(256,))
+decoder_state_inputs=[decoder_state_input_h, decoder_state_input_c]
+
+#이전 시점의 상태를 initial_state로 사용 for 다음 단어 예측
+decoder_outputs, state_h, state_c=decoder_lstm(decoder_inputs, initial_state=decoder_state_inputs)
+
+decoder_states=[state_h, state_c]
+decoder_output=decoder_softmax_layer(decoder_outputs)
+decoder_model=Model(inputs=[decoder_inputs] + decoder_state_inputs, outputs=[decoder_outputs]+decoder_states)#input데이터와 state를 입력으로, Dense&softmax와 state를 출력으로
+
+
+index_to_src=dict((i, char) for char, i in src_to_index.items())#for convenience
+index_to_tar=dict((i, char) for char, i in tar_to_index.items())
+def decode_sequence(input_seq):
+    states_value=encoder_model.predict(input_seq)
+
+    target_seq=np.zeros((1,1,tar_vocab_size))
+    target_seq[0,0, tar_to_index['\t']]=1#<SOS> 원-핫 벡터
+
+    stop_condition=False
+    decoded_sentence=""
+
+    while not stop_condition:
+        output_tokens, h, c=decoder_model.predict([target_seq]+states_value)#이전시점의 state를 입력으로.
+
+        sampled_token_index=np.argmax(output_tokens[0, -1, :])#예측을 integer
+        sampled_char=index_to_tar[sampled_token_index]#integer을 char
+
+        decoded_sentence+=sampled_char
+
+        if(sampled_char=='\n' or len(decoded_sentence)>max_tar_len):
+            stop_condition=True
+            
+        target_seq=np.zeros((1,1,tar_vocab_size))#다음 입력으로 사용하기 위함
+        target_seq[0,0,sampled_token_index]=1
+        states_value=[h,c]
+    return decoded_sentence
+
+for seq_index in [3, 50, 100, 300, 1001]:#입력 문장의 인덱스
+    input_seq=encoder_input[seq_index:seq_index+1]#?seq_index
+    decoded_sentence=decode_sequence(input_seq)
+    print(35*'-')
+    print('입력 문장: ', lines.src[seq_index])
+    print('정답 문장: ', lines.tar[seq_index][2:len(lines.tar[seq_index])-1])
+    print('번역 문장: ', decoded_sentence[1:len(decoded_sentence)-1])
+#ㅠㅠ키에러떠서 https://github.com/keras-team/keras-io/blob/master/examples/nlp/lstm_seq2seq.py 남김

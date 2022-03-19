@@ -183,3 +183,9 @@ tokenizer.save_model()#로 vocab을 저장할 수 있다.(수직데이터이기�
 기능으로는 encoded=tokenizer.encode(sentence)로 문장을 인코드하면 encoded.tokens, encoded.ids로 해당 sentence의 변환결과 접근이 가능하고, 디코드는 tokenizer.decode()를 사용하면 된다.
 
 [RNN을 이용한 인코더-디코더]
+ 1) 시퀀스-투-시퀀스(seq2seq)
+RNN2개를 인코더, 디코더로 서로 연결하여 사용하는 걸로, 입력문장과 출력 문장의 길이가 다른 경우 사용한다. Encoder는 context vector을 출력하고, 이를 디코더가 받아 번역된 단어를 한 개씩 순차적으로 출력한다.
+디코더는 <SOS>~<EOS>까지 예측하는데, 훈련시 하나의 cell이 잘못 예측하면 뒤의 셀들도 연쇄적으로 잘못 학습된다는 것을 방지하기 위해 decoder의 input을 주어 셀하나하나 훈련시키는 teacher forcing을 사용한다. 고로 실제 테스트시에는 decorder_input을 따로 받지 않고 전 state를 받게 설계한다.(<EOS>필요없음. 어차피 전꺼받음)
+디코더의 각 timestep별 출력은 Dense, Softmax를 거쳐 vocab확률벡터가 출력되게끔 한다. 이러한 Character-Level Machine Translation을 위해서는 두개 이상의 언어가 병렬적으로 구성된 코퍼스, parallel corpus가 필요하다.
+
+ 2)

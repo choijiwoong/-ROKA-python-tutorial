@@ -215,3 +215,7 @@ class API를 사용해 구현했는데, init으로 Encoder hidden_state, Decoder
 추가적으로 알아야하는건 BiLSTM을 사용했기에 attention입력으로 사용되는 state는 forward와 backward를 concatenate해서 보내야한다는거정도.
 
 [트랜스포머(Transformer)]
+ 1) 트랜스 포머(Transformer)
+요...요약따위..없어...그림...전체 그림이나 봐..
+
+ 2)

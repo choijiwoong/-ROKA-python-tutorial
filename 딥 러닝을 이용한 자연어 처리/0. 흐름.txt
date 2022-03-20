@@ -209,3 +209,9 @@ decoder의 hidden_state와 가중합(곱하여 합계)한 값을 Attention Value
  2) 바다나우 어텐션
 루웅 어텐션과 달리 decoder t-1 hidden_state를 사용하는 점이 다르며, 학습가능한 가중치 행렬3개를 이용하는데 Encoder 각 timestep에 하나, Decoder t-1 hidden_state에 하나씩 곱해 더한 후 tanh에 넣고 여기에 하나 더 곱하여 Attention Score벡터를 엊는다.
 이 Attention Score에 softmax를 적용해 Attention Distribution을 구해 이 Attention Weight들을 Decoder t-1 hidden_state에 가중합 하여 Context Vector를 구하고, 이를 다음 디코더 시점의 wor embedding vector에 concatenate하여 사용한다.
+
+ 3) 양방향 LSTM과 어텐션 알고리즘
+class API를 사용해 구현했는데, init으로 Encoder hidden_state, Decoder t-1 hidden_state, tanh뒤 곱해질 행렬 총3개를 init하고, call시에 해당 행렬들과 인자로 들어올 lstm, hidden_state로 연산 후 context_vector, attention_weights를 반환하면 된다.
+추가적으로 알아야하는건 BiLSTM을 사용했기에 attention입력으로 사용되는 state는 forward와 backward를 concatenate해서 보내야한다는거정도.
+
+[트랜스포머(Transformer)]

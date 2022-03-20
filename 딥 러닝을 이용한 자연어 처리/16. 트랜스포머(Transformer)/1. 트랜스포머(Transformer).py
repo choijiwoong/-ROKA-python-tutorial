@@ -358,7 +358,7 @@ def decoder(vocab_size, num_layers, dff, d_model, num_heads, dropout, name='deco
 
 #   [17. 트랜스포머 구현하기]_인코더의 출력을 연결하며, 디코더의 끝단에 다중 클래스 분류 문제를 풀 수 있게 vocab_size 출력층을 추가해준다.
 def transformer(vocab_size, num_layers, dff, d_model, num_heads, dropout, name='transformer'):
-    inputs=tf.keras.Input(shape=(None,), name='input')#Encoder
+    inputs=tf.keras.Input(shape=(None,), name='inputs')#Encoder
     dec_inputs=tf.keras.Input(shape=(None,), name='dec_inputs')#Decoder
 
     enc_padding_mask=tf.keras.layers.Lambda(create_padding_mask, output_shape=(1,1,None), name='enc_padding_mask')(inputs)#인코더의 패딩마스트
@@ -387,10 +387,11 @@ small_transformer=transformer(
 tf.keras.utils.plot_model(small_transformer, to_file='small_transformer.png', show_shapes=True)
 
 #   [19. 손실 함수 정의하기]_다중 클래스 분류를 풀 예정
+MAX_LENGTH=40#그 다음 챕터에서 이값으로 씀. 패딩이거로해서리
 def loss_function(y_true, y_pred):
     y_true=tf.reshape(y_true, shape=(-1, MAX_LENGTH-1))#Flatten하여 equal확인
 
-    loss=tf.keras.losses.SparseCategoricalCrossentropy(from_ligits=True, reduction='none')(y_true, y_pred)#Functinoal API전용으로다가 있던거구나. 왜 loss='sparse~말고 다른거있다 했었네
+    loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True, reduction='none')(y_true, y_pred)#Functinoal API전용으로다가 있던거구나. 왜 loss='sparse~말고 다른거있다 했었네
 
     mask=tf.cast(tf.not_equal(y_true, 0), tf.float32)
     loss=tf.multiply(loss, mask)

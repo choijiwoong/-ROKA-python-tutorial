@@ -219,3 +219,11 @@ class API를 사용해 구현했는데, init으로 Encoder hidden_state, Decoder
 요...요약따위..없어...그림...전체 그림이나 봐..
 
  2) 트랜스포머는 전반적으로 공부 하루 이상 들여서라도 다시 볼 필요가 있다. 다시 본다음에 텍스트분류까지 다시 복습하자.
+
+*****그런의미에서 시작된 전반적인 흐름 정리! RNN seq2se2부터 트랜스포머까지 대충 정리해보자.******
+(RNN을 이용한 인코더-디코더)
+seq2seq는 번역기에서 사용되며 인코더->Context->디코더 구조를 띈다. Vanila RNN보다는 LSTM, GRU셀로 구성되며, 디코더는 RNN Language Model(RNNLM)이다. RNNLM은 RNN으로 만든 언어모델을 뜻하며, RNN들의 각 timestep별로 sequence데이터들을 예측하는 과정이다. 참고느낌으로다가 RNNLM 언어모델링 사진 첨부하겠다.
+여러 RNN셀들 (심지어 현업에서는 몇백개, 몇천개의 차원RNN)을 사용하기에 정확도를 높이기 위해 Teacher forcing을 사용한다. 실제 Character-Level Neural Machine Translation의 구현은 비교적 간단한데, char vocab만들고 integer encoding하고 <sos>, <eos>토큰만 고려해주면 된다.
+Word-Level Neural Machine Translation은 전처리, Embedding만 신경쓰면 된다. 이전의 Character-Level은 Embedding을 사용하지 않았다. 참고로 두 Level모두 동작시에는 기존의 Decoder의 input을 따로 넣어줬었는데, 그걸 decorder_model의 preduct에 넣으면 된다. 사실 코드부는 잘 이해가 안가서 다시 정리해보겠다.
+ BLEU Score(Bilingual Evaluation Understudy Score)은 PPL보다 발전된 언어모델의 평가방법으로, 기계문장과 사람문장의 단어 개수 카운트로 평가하는 Unigram Precision->중복을 제거하여 정확도 높인 Modified Unigram Precision->n-gram도입으로 순서고려가 가능해진 BLEU->에서 Brevity Penalty(길이짧으면 정확도 높게나옴)를 보완한 현재의 BLEU는 NLTK에서 제공한다.
+

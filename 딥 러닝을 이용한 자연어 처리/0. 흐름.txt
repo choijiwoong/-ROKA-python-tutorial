@@ -227,3 +227,16 @@ seq2seq는 번역기에서 사용되며 인코더->Context->디코더 구조를 
 Word-Level Neural Machine Translation은 전처리, Embedding만 신경쓰면 된다. 이전의 Character-Level은 Embedding을 사용하지 않았다. 참고로 두 Level모두 동작시에는 기존의 Decoder의 input을 따로 넣어줬었는데, 그걸 decorder_model의 preduct에 넣으면 된다. 사실 코드부는 잘 이해가 안가서 다시 정리해보겠다.
  BLEU Score(Bilingual Evaluation Understudy Score)은 PPL보다 발전된 언어모델의 평가방법으로, 기계문장과 사람문장의 단어 개수 카운트로 평가하는 Unigram Precision->중복을 제거하여 정확도 높인 Modified Unigram Precision->n-gram도입으로 순서고려가 가능해진 BLEU->에서 Brevity Penalty(길이짧으면 정확도 높게나옴)를 보완한 현재의 BLEU는 NLTK에서 제공한다.
 
+(어텐션 메커니즘)
+Context Vector Information loss, Vanishing Gradient를 해결하고자 디코더의 출력단어 prediction의 매 timestep에서 인코더의 전체 문장을 연관성에 따라 다른 중요도로 참고하는 기법이다.
+Attention(Q, K, V)=Attention Value 즉, Query에 대한 모든 Key의 유사도를 각각 구한다음, 이에 매핑되어있는 각각의 Value에 (유사도를)반영한 뒤 모두 더하여 리턴한다. 이 값이 Attention Value이다. 
+seq2seq에서는 Q는 t시점의 디코더 셀의 state_h, K와 V는 모든 시점의 인코더 셀의 은닉 상태들이고 의미는 간단하게 Decoder에서 하나 예측(Q)할때 인코더 다(K,V) 참고한다는 거임.
+ 과정은 디코더 출력+softmax(dot-product attention(encoder의 모든 출력값(K,V)))이다. 인코더 모든시점 출력과 디코더 Q가 Dot-Product한 결과를 Attention score라고하며, 
+이 값을 softmax한 결과를 Attention Distribution이라고 하며, 각 값을 Attention Weight라고 하며, 이 Attention Weight들을 Encoder의 state_h와 Weighted Sum하면 Attention Value가 나온다. 이는 Context Vector라고도 부른다.
+이 context vector를 디코더 t시점 hidden_state를 concat하고 tanh를 지나게하여 이를 출력층의 입력으로 사용한다. 사진 참고! Dot-Product외에도 scaled dot, general, concat, location-base등 어텐션 프로덕트가 있다. 이 모든게 seq2seq발전시키려고 인코더 문장 전체 보자고 일어난일.
+
+바다나우는 Attention(Q, K, V)=Attention_Value에서 Q의 timestep이 t-1인거다. 하.. 차이는 좀 많은뎅 씻발
+Attention_score을 구하기 위해서 기존엔 dot-product를 수행했는데, 얘는 W3 x tanh(W1*Encoder's states_h+W2*Decoder's t-1 state_h)으로 식 그대로이다. 각각 학습가능한 가중치행렬들을 곱하고 더하고 tanh하고 하나더 곱하고 지랄하면 정확도가 상승한다!
+그뒤는 뭐 똑같이 Attention_score에 softmax해서 Attention Distribution얻고, 각 Attention Weights랑 decoder t-1 state_h가중합해서 Attention Value구하고 Context Vector를 Decoder현재 시점의 입력 Embedded Word Vector에 Concat하여 사용한다.
+
+시간이 좀만 더 있었으면 seq2seq2, Attention 복습까지 다 마무리 할 수 있었는데 끌끌..벌써 23시 48분이고만.. 내일은 이거 예제 정리하고 트랜스포머 복습하는걸루

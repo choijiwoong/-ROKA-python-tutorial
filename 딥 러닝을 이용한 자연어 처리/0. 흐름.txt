@@ -239,4 +239,6 @@ seq2seq에서는 Q는 t시점의 디코더 셀의 state_h, K와 V는 모든 시�
 Attention_score을 구하기 위해서 기존엔 dot-product를 수행했는데, 얘는 W3 x tanh(W1*Encoder's states_h+W2*Decoder's t-1 state_h)으로 식 그대로이다. 각각 학습가능한 가중치행렬들을 곱하고 더하고 tanh하고 하나더 곱하고 지랄하면 정확도가 상승한다!
 그뒤는 뭐 똑같이 Attention_score에 softmax해서 Attention Distribution얻고, 각 Attention Weights랑 decoder t-1 state_h가중합해서 Attention Value구하고 Context Vector를 Decoder현재 시점의 입력 Embedded Word Vector에 Concat하여 사용한다.
 
-시간이 좀만 더 있었으면 seq2seq2, Attention 복습까지 다 마무리 할 수 있었는데 끌끌..벌써 23시 48분이고만.. 내일은 이거 예제 정리하고 트랜스포머 복습하는걸루
+양방향 모델은 그냥 별거없고 def Bahdanau함수로 연산 대체하는데 keras상속받아서 Functional API사용하며, 반환된 context_vector와 attention_weights중에 context_vector를 Dense with relu, Dense with Sigmoid로 binary_crossentropy사용하여 일반적인 모델처럼 사용함.
+
+(트랜스포머)

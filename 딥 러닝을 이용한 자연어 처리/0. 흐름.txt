@@ -241,4 +241,14 @@ Attention_score을 구하기 위해서 기존엔 dot-product를 수행했는데,
 
 양방향 모델은 그냥 별거없고 def Bahdanau함수로 연산 대체하는데 keras상속받아서 Functional API사용하며, 반환된 context_vector와 attention_weights중에 context_vector를 Dense with relu, Dense with Sigmoid로 binary_crossentropy사용하여 일반적인 모델처럼 사용함.
 
-(트랜스포머)
+(트랜스포머)_일단 호흡이 굉장히 길다는 것을 알기 때문에 눈으로 한번 흐름을 다시 익히는걸로 하고 대략적인 것만 여기 적겠음
+seq2seq의 정보손실을 보완하기 위해 인코더의 전체를 보는 dot product, bahdanau등의 attention을 이용한 것인데, 아예 RNN의 근본적인 문제를 극복하고자 이 Attention만으로 인코더와 디코더를 만든 것이다.
+Hyperparameter로는 d_model는 인코더와 디코더의 정해진 입출력 크기, num_layers는 인코더디코더 층 개수, num_heads는 병렬의 개수, dff는 트랜스포머 내부 FFNN은닉층의 크기이며, 입출력은 d_model을 따른다.
+임베딩 벡터를 트랜스포머 입력으로 사용하기 전에, sin & cos기반 PE함수를 통해 포지셔널 인코딩으로 위치정보를 직접적으로 더해준다.  구현 시 tf.keras.layers.Layer을 상속받는다.
+ 트랜스포머에는 Encoder-Self Attention, Masked Decoder Self-Attention, Encoder-Decoder Attention 총 세가지 어텐션이 사용된다.
+Encoder-Self Attention의 QKV는 각각 d_model/num_heads크기의 QW, KW, VW와 곱해져 만들어지고, 각각 만들어진 QKV벡터에 일반적인 어텐션(Q와 V를 dot-product attention)을 하되 크기를 조정(Key의 dimention 루트값으로)하여 Scaled dot-product Attention라 부르는 것을 수행하여 Attention Score을 얻는다.
+이 Attention Score은 마찬가지로 softmax를 통하여 Attention Distribution을 얻고, 이들을 V와 가중합하여 Attention_value를 얻는다. 다만 실제에선 행렬연산을 통해 한번에 적용할 뿐이다.  이때의 Attention Value 크기는 (seq_len, d_model/num_heads)가 된다.
+ Q와 K를 matmul, softmax하여 K에 가장 근접한 인덱스를 반영하고, 그에 대응되는 value를 matmul로 반영하여 반환한다. 코드 예시보면 바로 보임. q와 k의 matmul로 일치하는 인덱스 one-hot모양(softmax의 결과)나오고, 예시에선 완전히 일치하여 1이기에 그 V값 그대로 가지고 나옴.
+트랜스포머 어텐션 과정에서 병렬처리가 더 효과적이기에 num_heads로 나눠 병렬 어텐션을 수행한 뒤(여러 관점을 위함) W를 곱해 원래의 크기(seq_len, d_model)을 가지는 Multi-head attention matrix를 도출하게 한다. 즉 병렬작업은 하지만 어텐션 결과는 이전과 같기에 동일한 작업(softmax라던가)를 할 수 있다.
+Position-wise FFNN은 MAX(0, x*W1+b1)*W2+b2이다. 이 x는 어텐션 결과기에 (seq_len, d_model)이며, 포지션 와이드 ffnn사이즈로 정한 dff크기 은닉층을 거치도록 W1은 (d_model, dff), W2는 (dff, d_mdoel)의 크기를 가져 원래의 크기를 도출한다. 각 hstate별로 각각 적용한다(참고로 scaled_dot_product_attention의 mask인자는 <pad>를 계산에 사용하지 않도록 마스킹 해주는 마스크이다)
+ 그리고 Multi-head Self-Attention이후, FFNN이후에 Resigual connection과 Layer Normalization을 한다.

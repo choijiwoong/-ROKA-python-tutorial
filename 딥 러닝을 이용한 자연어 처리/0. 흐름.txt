@@ -262,7 +262,7 @@ Learning rate Scheduler는 트랜스포머에서 사용자가 정한 단계까�
 [BERT(Bidirectional Encoder Representations fron Transformers)]
  1) 버트(BERT)
 Word2Vec & FastText & GloVe---다의어구분--->LSTM 언어모델----RNN고전문제--->트랜스포머를 사용하기 위한 Masked Language Model: 15%랜덤 마스킹, 예측.
-BERT는 트랜스포머 Encoder을 쌓은 것이기에 Contwxtual Embedding을 사용하며, BERT subword Tokenizer는 vocab에 존재하지 않으면 subword분리한 뒤 중간서브워드앞에 ##를 붙여 구분한다.
+BERT는 트랜스포머 Encoder을 쌓은 것이기에 Contextual Embedding을 사용하며, BERT subword Tokenizer는 vocab에 존재하지 않으면 subword분리한 뒤 중간서브워드앞에 ##를 붙여 구분한다.
 BERT는 위치정보를 위한 별도의 임베딩 층 Position Embedding을 사용하며, Masked Language Model외에 Next Sentence Prediction을 통하여 문장의 관계를 이해하는 QA, NLI태스크를 해결한다.
 문장간의 구분을 위해 Segment Embedding을 사용하며, Sentence0 Sentence1 총 2개의 임베딩 벡터를 사용한다. 파인튜닝하여 앞서말한 QA, NLI외에도 Single Text Classification, Tagging등에 가용하다.
 불필요한 패딩 구분을 위해 추가적으로 BERT는 Attention Mask를 시퀀스 입력으로 받는다.

@@ -181,6 +181,8 @@ class SoftmaxWithLoss:
         return dx
     
 #Backpropagation을 적용한 신경망의 예시
+from collections import OrderedDict
+
 class TwoLayerNet:
     def __init__(self, input_size, hidden_size, output_size, weight_init_std=0.01):
         #가중치 초기화
@@ -190,4 +192,99 @@ class TwoLayerNet:
         self.params['W2']=weight_init_std*np.random.rand(hidden_size, output_size)
         self.params['b2']=np.zeros(output_size)
 
-        #계층 준비 p.182부터
+        #계층 준비
+        self.layers=OrderedDict()
+        self.layers['Affine1']=Affine(self.params['W1'], self.params['b1'])
+        self.layers['Relu1']=Relu()
+        self.layers['Affine2']=Affine(self.params['W2'], self.params['b2'])
+        self.lastLayer=SoftmaxWithLoss()#non-ReLU!
+
+    def predict(self, x):
+        for layer in self.layers.values():
+            x=layer.forward(x)
+
+        return x
+
+    def loss(self, x, t):
+        y=self.predict(x)
+        return self.lastLayer.forward(y, t)
+
+    def accuracy(self, x, t):
+        y=self.predict(x)
+        y=np.argmax(y, axis=1)#예측값 index 게또
+        if t.ndim!=1:#필요하다면 label 데이터에 대해서도 꼴 맞춰주기
+            t=np.argmax(t, axis=1)
+
+        accuracy=np.sum(y==t)/float(x.shape[0])#개수(평균을 위함)
+        return accuracy
+
+    def numerical_gradient(self, x, t):
+        loss_W=lambda W: self.loss(x, t)#손실함수를 람다로 생성 (수치미분 준비)
+
+        grads={}
+        grads['W1']=numerical_gradient(loss_W, self.params['W1'])#손실항수를 W1기준 편미분
+        grads['b1']=numerical_gradient(loss_W, self.params['b1'])
+        grads['W2']=numerical_gradient(loss_W, self.params['W2'])
+        grads['b2']=numerical_gradient(loss_W, self.params['b2'])
+
+    def gradient(self, x, t):
+        #순전파
+        self.loss(x, t)
+
+        #역전파
+        dout=1
+        dout=self.lastLayer.backward(dout)
+
+        layers=list(self.layers.values())
+        layers.reverse()
+        for layer in layers:
+            dout=layer.backward(dout)#backward를 단순히 역순으로 호출하고 각각의 미분값들을 grads에 저장하여 리턴.
+
+        #결과 저장
+        grads={}
+        grads['W1']=self.layers['Affine1'].dW
+        grads['b1']=self.layers['Affine1'].db
+        grads['W2']=self.layers['Affine2'].dW
+        grads['b2']=self.layers['Affine2'].db
+
+        return grads
+
+"""오차역전파법을 사용한 학습 구현하기
+import sys, os
+sys.path.append(os.pardir)
+import numpy as np
+from dataset.mnist import load_mnist
+
+(x_train, t_train), (x_test, t_test)=load_mnist(normalize=True, one_hot_label=True)#Data get
+network=TwoLayerNet(input_size=784, hidden_size=50, output_size=10)#Make Two Layer Net that can backpropagate
+
+iters_num=10000
+train_size=x_train.shape[0]
+batch_size=100
+learning_rate=0.1
+
+train_loss_list=[]
+train_acc_list=[]
+test_acc_list=[]
+
+iter_per_epoch=max(train_size/batch_size, 1)
+
+for i in range(iters_num):
+    batch_mask=np.random.choice(train_size, batch_size)#batch_size만큼 랜덤으로 인덱스 추출.
+    x_batch=x_train[batch_mask]
+    t_batch=t_train[batch_mask]
+
+    grad=network.gradient(x_batch, t_batch)#미분값 저장
+
+    for key in ('W1', 'b1', 'W2', 'b2'):
+        network.params[key]-=learning_rate*grad[key]#경사하강(가중치 조율)
+
+    loss=network.loss(x_batch, t_batch)    train_loss_list.append(loss)
+
+    if i%iter_per_epoch==0:
+        train_acc=network.accuracy(x_train, t_train)
+        test_acc=network.accuracy(x_test, t_test)
+        train_acc_list.append(train_acc)
+        test_acc_list.append(test_acc)
+        print(train_acc, test_acc)
+"""

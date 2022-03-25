@@ -274,3 +274,8 @@ Tokenizer에 직접적으로 입력하여 반환된 Dictionary구조에 'input_i
  3) 구글, 한국어 NSP
 TFBertForNextSentencePrediction으로 NSP BERT를 로드하며, MLM과 마찬가지로 AutoTokenizer를 사용한다. tokenizer입력으로 두개의 입력을 전달하며 마찬가지로 'input_ids', 'token_type_ids'로 정수인코딩과 세그먼트 인코딩을 확인할 수 있다. 또한 tokenizer의 cls_token, cls_token_id등으로 특별 토큰정보를 얻을 수 있다.
 다만 MLM의 FillMaskPipeline같은 모듈은 없이 모델에 직접 input_ids와 token_type_ids결과를 보내어 얻은 logit을 softmax, argmax로 최종 예측 레이블을 얻을 수 있다. 0이 연결되는 문장, 1이 연결되지 않는 문장이다. (영어의 경우 'bert-base-uncased', 한국어의 경우 'klue/bert-base'모델을 사용한다.)
+
+ 4) SBERT(Setence BERT)
+[CLS]토큰을 전체 문장 벡터로 간주, 전체 출력 벡터를 avg_pooling으로 의미 강조 벡터, max_pooling으로 중요단어 강조 벡터를 문장 임베딩 벡터로 사용이 가능하며,
+SBERT학습을 위해 Eatailment, Contradiction, Neutral 관계를 판단하는 Natural Language Inference 또는 Sementic Textual Similarity로 Fine-Tuning하여 학습시킬 수 있다.
+선자인 문장 쌍 분류 태스크의 경우 h=(u; v; |u-v|)를 concatenate하여 Dense-softmax로, 후자인 문장 쌍 회귀 태스크의 경우 h=cosine_similarity(u,v)를 Label과의 Mean Squared Error로 학습시킨다.

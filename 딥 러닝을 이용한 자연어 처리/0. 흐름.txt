@@ -279,3 +279,5 @@ TFBertForNextSentencePrediction으로 NSP BERT를 로드하며, MLM과 마찬가
 [CLS]토큰을 전체 문장 벡터로 간주, 전체 출력 벡터를 avg_pooling으로 의미 강조 벡터, max_pooling으로 중요단어 강조 벡터를 문장 임베딩 벡터로 사용이 가능하며,
 SBERT학습을 위해 Eatailment, Contradiction, Neutral 관계를 판단하는 Natural Language Inference 또는 Sementic Textual Similarity로 Fine-Tuning하여 학습시킬 수 있다.
 선자인 문장 쌍 분류 태스크의 경우 h=(u; v; |u-v|)를 concatenate하여 Dense-softmax로, 후자인 문장 쌍 회귀 태스크의 경우 h=cosine_similarity(u,v)를 Label과의 Mean Squared Error로 학습시킨다.
+
+ 5) 트랜스포머의 다른 모델 클래스로 텍스트분류같은 many-to-one의 TFBertSequenceClassifcation, 개체명 인식같은 many-to-many의 TFBertForTokenClassification, 질의응답같은 QA의 TFBertQuestionAnswering을 제공한다.

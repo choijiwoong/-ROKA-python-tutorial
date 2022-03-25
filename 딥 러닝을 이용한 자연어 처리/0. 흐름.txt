@@ -271,3 +271,6 @@ BERT는 위치정보를 위한 별도의 임베딩 층 Position Embedding을 사
 TFBertForMaskedLM으로 MLM구조 BERT를 로드하며, pre-trained 모델이기에 tokenizer는 같은 것을 사용해야하기에 AutoTokenizer로 학습에 사용된 Tokenizer를 로드할 수 있다.
 Tokenizer에 직접적으로 입력하여 반환된 Dictionary구조에 'input_ids', 'token_type_ids', 'attention_mask'로 정보를 확인할 수 있지만, FillMaskPipeline인자로 model과 tokenizer를 전달하여 바로 [MASK]예측에 사용할 수 있다.
 
+ 3) 구글, 한국어 NSP
+TFBertForNextSentencePrediction으로 NSP BERT를 로드하며, MLM과 마찬가지로 AutoTokenizer를 사용한다. tokenizer입력으로 두개의 입력을 전달하며 마찬가지로 'input_ids', 'token_type_ids'로 정수인코딩과 세그먼트 인코딩을 확인할 수 있다. 또한 tokenizer의 cls_token, cls_token_id등으로 특별 토큰정보를 얻을 수 있다.
+다만 MLM의 FillMaskPipeline같은 모듈은 없이 모델에 직접 input_ids와 token_type_ids결과를 보내어 얻은 logit을 softmax, argmax로 최종 예측 레이블을 얻을 수 있다. 0이 연결되는 문장, 1이 연결되지 않는 문장이다. (영어의 경우 'bert-base-uncased', 한국어의 경우 'klue/bert-base'모델을 사용한다.)

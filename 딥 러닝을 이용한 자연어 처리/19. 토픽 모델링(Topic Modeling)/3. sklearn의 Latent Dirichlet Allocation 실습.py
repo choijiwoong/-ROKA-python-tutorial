@@ -45,5 +45,5 @@ terms=vectorizer.get_feature_names()#vocab저장
 
 def get_topics(components, feature_names, n=5):#lda_model의 components와 vocab전달
     for idx, topic in enumerate(components):#component의 각 토픽별로, 
-        ㅜprint('Topic',idx+1,[(feature_names[i], topic[i].round(2)) for i in topic.argsort()[:-n-1:-1]])#해당하는 상위 5개의 단어 출력(topic값에 대한 의문이 정수인코딩도 아니고 고민을 좀 해봤는데, 그냥 LDA의 연산 결과인듯)
+        print('Topic',idx+1,[(feature_names[i], topic[i].round(2)) for i in topic.argsort()[:-n-1:-1]])#해당하는 상위 5개의 단어 출력(topic값에 대한 의문이 정수인코딩도 아니고 고민을 좀 해봤는데, 그냥 LDA의 연산 결과인듯)
 get_topics(lda_model.components_, terms)

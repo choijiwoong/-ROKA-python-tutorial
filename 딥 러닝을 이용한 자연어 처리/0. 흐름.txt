@@ -286,4 +286,8 @@ SBERT학습을 위해 Eatailment, Contradiction, Neutral 관계를 판단하는 
 TruncatedSVD를 이용하여 Latent Semantic Analysis를 진행하는데 U는 문서xT, VT는 Tx단어개수 형태로 U는 전체 문서의 잠재의미(문서벡터), VT의 각 열은 잠재의미를 내포한 단어벡터이다.
 Latent Dirichlet Allocation은 토픽 분포p(topic t | document d)와 단어 분포(word w | topic t)를 Reverse Engineering을 이용하여 수행하는데 topic t를 hyperparameter로 gensim의 ldamodel에 corpus, num_topics, dictionary, passes(추정횟수)를 인자로 생성하여 사용한다.
 pyLDAvis.gensim_model로 시각화가 가능하며 토픽별 단어분포는 ldamodel.print_topics(num_word)로, 문서별 토픽분포는 ldamodel[corpus]로 확인이 가능하다.
- BERT를 이용하여 키워드 추출이 가능한데, SentenceTransformer을 사용하여 CountVectorized n-gram키워드들을 인코딩 후 cosine유사도로 문서와 키워드, 키워드와 키워드를 준비한 후 Max Sum Similarity(데이터 쌍 거리가 최대가 되게 하여 후보 유사성을 극대화)를 사용하거나 혹은 Maximal Marginal Relevance(diversity를 고려한 후보선택)을 사용할 수 있다.
+ BERT를 이용하여 키워드 추출이 가능한데, SentenceTransformer을 사용하여 CountVectorized n-gram키워드들을 인코딩 후 cosine유사도로 문서와 키워드, 키워드와 키워드를 준비한 후 Max Sum Similarity(데이터 쌍 거리가 최대가 되게 하여 후보-후보유사는 낮게, 문서-후보 유사성을 극대화)를 사용하거나 혹은 Maximal Marginal Relevance(diversity를 고려한 후보선택)을 사용할 수 있다.
+SBERT로 한국어 키워드 추출하며 다시 정리하면, 일반적인 코사인 유사도만으로 구하면 키워드 자체는 문서랑 유사한데 키워드들이 다 똑같은 키워드가 될 가능성이 있음. 그래서 키워드랑 문서랑 유사하면서 키워드끼리 유사하지 않게 하는 방법으로 Max Sum Similarity와 Maximal Marginal Relevance가 있는거임
+선자는 우선 문서랑 유사한 키워드 nr_candidates만큼 뽑고(인자이름임) 그 안아서 후보끼리의 거리가 최대화되는 키워드 top_n을 뽑음. 고로 top_n은 작을수록, nr_candidates는 클수록 다양성이 증가할 확률이 높아지고,
+반면에 후자는 아예 이러한 다양성을 관제하는 인자를 추가했음. 일단 메카니즘도 약간 다른데 (1-diversity)*candidate_similarities-diversity*target_similarities.reshape(-1,1)을 통해 현재 키워드로 추가된 것들의 유사도가 높으면 diversity만큼을 곱해서 다른 후보군 유사도에서 빼버린다. 
+즉, 현재의 키워드들 유사도가 높다면 다음으로 키워드들이랑 다른 키워드를 추가하고, 현재 키워드들 유사도가 낮다면 뭐 알아서 그냥저냥하는데 이 활성화 정도? 민감도? 같은걸 diversity변수가 조절한다. like learning rate

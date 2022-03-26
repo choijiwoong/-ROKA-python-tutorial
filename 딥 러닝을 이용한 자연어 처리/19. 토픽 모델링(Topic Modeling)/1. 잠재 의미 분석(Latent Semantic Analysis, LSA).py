@@ -67,3 +67,49 @@ print(A_prime.round(2))#하지만 막상 보면 앵간 비슷한 값이 나오�
  VT는 토픽수(t) x 단어개수이다. 이들의 각 열은 잠재 의미를 표현하기 위해 수치화된 각각의 단어 벡터이다.
 즉, U와 VT는 각각 잠재 의미를 내포한 문서벡터, 단어벡터로 볼 수 있다. 이를 통해 다른 문서와의 유사도, 다른 단어와의 유사도, 단어로부터 문서의 유사도 등의 계산이 가능하다."""
 
+#3. Latent Semantic Analysis
+#(뉴스그룹 데이터에 대한 이해)
+import pandas as pd
+from sklearn.datasets import fetch_20newsgroups
+import nltk
+from nltk.corpus import stopwords
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.decomposition import TruncatedSVD
+
+dataset=fetch_20newsgroups(shuffle=True, random_state=1, remove=('headers', 'footers', 'quotes'))
+documents=dataset.data#[1]으로 접근하면 특수문자섞인 다수의 영어문장으로 구성. target_names로 접근하면 20개의 category확인가능.
+print('\n샘플의 수: ', len(documents))
+
+#(텍스트 전처리)
+news_df=pd.DataFrame({'document': documents})#데이터를 dict 'document'에
+news_df['clean_doc']=news_df['document'].str.replace("[^a-zA-Z]", " ")#cleaning후 데이터를 clean_doc에
+news_df['clean_doc']=news_df['clean_doc'].apply(lambda x: ' '.join([w for w in x.split() if len(w)>3]))#짧둥이 컷
+news_df['clean_doc']=news_df['clean_doc'].apply(lambda x : x.lower())
+
+stop_words=stopwords.words('english')
+tokenized_doc=news_df['clean_doc'].apply(lambda x: x.split())#불용어 제거를 위한 토큰화
+tokenized_doc=tokenized_doc.apply(lambda x: [item for item in x if item not in stop_words])
+
+#(TF-IDF행렬 만들기)
+detokenized_doc=[]
+for i in range(len(news_df)):
+    t=' '.join(tokenized_doc[i])#Detokenization
+    detokenized_doc.append(t)
+news_df['clean_doc']=detokenized_doc
+
+vectorizer=TfidfVectorizer(stop_words='english', max_features=1000, max_df=0.5, smooth_idf=True)#토큰화되지 않은 데이터로 만든다.(상위1000개단어 보존, 빈도수50%이하컷, 제로분할방지)
+X=vectorizer.fit_transform(news_df['clean_doc'])#vectorizer에 data fitting
+print('TF-IDF의 크기: ', X.shape)
+
+#(Topic-Modeling)
+svd_model=TruncatedSVD(n_components=20, algorithm='randomized', n_iter=100, random_state=122)
+svd_model.fit(X)#t=20으로 TF-IDF기반으로 TuncatedSVD생성
+print('svd_model의 크기: ', svd_model)
+print('VT의 크기: ', np.shape(svd_model.components_))#토픽x단어의 수
+
+terms=vectorizer.get_feature_names()#vocab
+
+def get_topics(components, feature_names, n=5):
+    for idx, topic in enumerate(components):#svd's components에서 topic 데이터 get
+        print('Topic',':', idx+1, [(feature_names[i], topic[i].round(5)) for i in topic.argsort()[:-n-1:-1]])#각 단어별로 ('word', val)리스트화
+print(get_topics(svd_model.components_, terms))#svd's components와 vocab을 전달.

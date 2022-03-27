@@ -293,3 +293,5 @@ SBERT로 한국어 키워드 추출하며 다시 정리하면, 일반적인 코�
 즉, 현재의 키워드들 유사도가 높다면 다음으로 키워드들이랑 다른 키워드를 추가하고, 현재 키워드들 유사도가 낮다면 뭐 알아서 그냥저냥하는데 이 활성화 정도? 민감도? 같은걸 diversity변수가 조절한다. like learning rate
 (BoW와 Context를 모두 사용하는 CombinedTM(Combined Topic Model)을 사용할 수 있으며, BERT데이터를 TopicModelDataPreparation('paraphrase-distillroberta-base-v1')로 가져와 context를 위한 데이터로 전처리안된 데이터, bow를 위한 데이터로 전처리 한 데이터를 피팅시켜 가용하다
 한국어의 경우 CountVectorizer자체적인 토큰화수단 sklearn의 띄어쓰기 토큰화로는 적합하지 않기에 Mecab을 사용하며, 한국어든 영어든 핵심은 Bow기반 embedding, context기반(BERT) embedding을 TopicModelDataPreparation에 로드하여 두 정보가 반영된 embedding data를 만들고, 이를 CombinedTM에 fitting시켜 get_topics로 토픽을 확인한다.)
+ BERTopic은 BERT임베딩, C-TF-IDF를 이용하여 클러스터를 만드는 topic modeling 기술이며, 구체적으로는 UMAP으로 임베딩차원 축소 후 HDSCAN으로 클러스터링하고 c-TF-IDF로 토픽 추출한다.
+그냥 쉽게 말하면 굉장히 편리한 토픽 모델링으로 BERTopic()하고 데이터만 피팅시키면 바로 transform을 통하여 prediction이 가능하며, 다양한 시각화 툴을 제공한다. 일단 굉장히 편하다

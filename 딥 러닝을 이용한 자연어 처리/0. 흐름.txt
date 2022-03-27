@@ -295,3 +295,7 @@ SBERT로 한국어 키워드 추출하며 다시 정리하면, 일반적인 코�
 한국어의 경우 CountVectorizer자체적인 토큰화수단 sklearn의 띄어쓰기 토큰화로는 적합하지 않기에 Mecab을 사용하며, 한국어든 영어든 핵심은 Bow기반 embedding, context기반(BERT) embedding을 TopicModelDataPreparation에 로드하여 두 정보가 반영된 embedding data를 만들고, 이를 CombinedTM에 fitting시켜 get_topics로 토픽을 확인한다.)
  BERTopic은 BERT임베딩, C-TF-IDF를 이용하여 클러스터를 만드는 topic modeling 기술이며, 구체적으로는 UMAP으로 임베딩차원 축소 후 HDSCAN으로 클러스터링하고 c-TF-IDF로 토픽 추출한다.
 그냥 쉽게 말하면 굉장히 편리한 토픽 모델링으로 BERTopic()하고 데이터만 피팅시키면 바로 transform을 통하여 prediction이 가능하며, 다양한 시각화 툴을 제공한다. 일단 굉장히 편하다
+
+[Text Summarization]
+Abstractive Summarization과 Extrative Summarization으로 크게 구분되는데, 선자의 경우 ANN기반으로 예제는 seq2seq+attention의 구조로 설계하였음. 후자는 페이지 랭킹 점수를 이용하는데,
+우선 간단하게 문장의 단어벡터 평균값을 문장 임베딩으로 하여 이들끼리의 코사인 유사도를 계산하고, 여기에 nx모듈의 pagerank함수로 ranking score을 구한다. 이 score에서 높은 점수를 가진 n개 문장을 요약문으로 삼는다.

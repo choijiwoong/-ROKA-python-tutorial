@@ -291,4 +291,5 @@ SBERT로 한국어 키워드 추출하며 다시 정리하면, 일반적인 코�
 선자는 우선 문서랑 유사한 키워드 nr_candidates만큼 뽑고(인자이름임) 그 안아서 후보끼리의 거리가 최대화되는 키워드 top_n을 뽑음. 고로 top_n은 작을수록, nr_candidates는 클수록 다양성이 증가할 확률이 높아지고,
 반면에 후자는 아예 이러한 다양성을 관제하는 인자를 추가했음. 일단 메카니즘도 약간 다른데 (1-diversity)*candidate_similarities-diversity*target_similarities.reshape(-1,1)을 통해 현재 키워드로 추가된 것들의 유사도가 높으면 diversity만큼을 곱해서 다른 후보군 유사도에서 빼버린다. 
 즉, 현재의 키워드들 유사도가 높다면 다음으로 키워드들이랑 다른 키워드를 추가하고, 현재 키워드들 유사도가 낮다면 뭐 알아서 그냥저냥하는데 이 활성화 정도? 민감도? 같은걸 diversity변수가 조절한다. like learning rate
-(BoW와 Context를 모두 사용하는 CombinedTM(Combined Topic Model)을 사용할 수 있으며, BERT데이터를 TopicModelDataPreparation('paraphrase-distillroberta-base-v1')로 가져와 context를 위한 데이터로 전처리안된 데이터, bow를 위한 데이터로 전처리 한 데이터를 피팅시켜 가용하다)
+(BoW와 Context를 모두 사용하는 CombinedTM(Combined Topic Model)을 사용할 수 있으며, BERT데이터를 TopicModelDataPreparation('paraphrase-distillroberta-base-v1')로 가져와 context를 위한 데이터로 전처리안된 데이터, bow를 위한 데이터로 전처리 한 데이터를 피팅시켜 가용하다
+한국어의 경우 CountVectorizer자체적인 토큰화수단 sklearn의 띄어쓰기 토큰화로는 적합하지 않기에 Mecab을 사용하며, 한국어든 영어든 핵심은 Bow기반 embedding, context기반(BERT) embedding을 TopicModelDataPreparation에 로드하여 두 정보가 반영된 embedding data를 만들고, 이를 CombinedTM에 fitting시켜 get_topics로 토픽을 확인한다.)

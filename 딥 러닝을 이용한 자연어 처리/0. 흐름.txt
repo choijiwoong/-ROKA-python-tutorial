@@ -251,7 +251,7 @@ Encoder-Self Attention의 QKV는 각각 d_model/num_heads크기의 QW, KW, VW와
  Q와 K를 matmul, softmax하여 K에 가장 근접한 인덱스를 반영하고, 그에 대응되는 value를 matmul로 반영하여 반환한다. 코드 예시보면 바로 보임. q와 k의 matmul로 일치하는 인덱스 one-hot모양(softmax의 결과)나오고, 예시에선 완전히 일치하여 1이기에 그 V값 그대로 가지고 나옴.
 트랜스포머 어텐션 과정에서 병렬처리가 더 효과적이기에 num_heads로 나눠 병렬 어텐션을 수행한 뒤(여러 관점을 위함) W를 곱해 원래의 크기(seq_len, d_model)을 가지는 Multi-head attention matrix를 도출하게 한다. 즉 병렬작업은 하지만 어텐션 결과는 이전과 같기에 동일한 작업(softmax라던가)를 할 수 있다.
 Position-wise FFNN은 MAX(0, x*W1+b1)*W2+b2이다. 이 x는 어텐션 결과기에 (seq_len, d_model)이며, 포지션 와이드 ffnn사이즈로 정한 dff크기 은닉층을 거치도록 W1은 (d_model, dff), W2는 (dff, d_mdoel)의 크기를 가져 원래의 크기를 도출한다. 각 hstate별로 각각 적용한다(참고로 scaled_dot_product_attention의 mask인자는 <pad>를 계산에 사용하지 않도록 마스킹 해주는 마스크이다)
- 그리고 Multi-head Self-Attention이후, FFNN이후에 Resigual connection과 Layer Normalization을 한다.
+ 그리고 Multi-head Self-Attention이후, FFNN이후에 Residual connection과 Layer Normalization을 한다.
 종합적으로 인코더 층을 쌓아 인코더 모델을 반환하는 함수를 사용하고, scaled dot-product사용하려는데 우리가 정의한 함수는 일반적인 multi-head attention이기에 word embedding후 d_model sqrt결과를 미리 곱해주어 scaling해준다. positonal encoding은 위치정보만 반영하기에 순서는 상관없다.(scaling->positional encoding or positional encoding->scaling)
 그리고 솔직히 사용되는 어텐션 다 비슷한데, 인코더에 사용되는게 일반적인 scaling 버전이고, masked는 우리가 훈련을 위해 decoder_input을 따로 넣는데 미래시점 데이터 참고하지말라고 하는 mask추가된거고 부르는걸 look-ahead mask라고 하는거임. encoder-decoder어텐션은 입력두개 그냥 인코더 출력쓰는거
  최종적으로 완성된 Encoder-Decoder을 서로 연결하여 Encoder의 출력이 Decoder의 입력으로 들어가게끔 하고, mask들을 설정하여 Encoder 혹은 Decoder에게 넘겨주도록 총괄적인 Link느낌의 구조로 구현이 된다.

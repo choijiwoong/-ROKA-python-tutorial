@@ -299,3 +299,7 @@ SBERT로 한국어 키워드 추출하며 다시 정리하면, 일반적인 코�
 [Text Summarization]
 Abstractive Summarization과 Extrative Summarization으로 크게 구분되는데, 선자의 경우 ANN기반으로 예제는 seq2seq+attention의 구조로 설계하였음. 후자는 페이지 랭킹 점수를 이용하는데,
 우선 간단하게 문장의 단어벡터 평균값을 문장 임베딩으로 하여 이들끼리의 코사인 유사도를 계산하고, 여기에 nx모듈의 pagerank함수로 ranking score을 구한다. 이 score에서 높은 점수를 가진 n개 문장을 요약문으로 삼는다.
+
+[질의 응답]
+메모리 네트워크를 이용한 QA는 첨부된 사진이 전부임. ㄹㅇ 일단 babi데이터 stories와 question, answer 나누고 메모리 네트워크 구조 사용하여 훈련시키는데 스토리 문장을
+각각 다른 임베딩으로 2번 임베딩하고, 그 중 하나는 질문 임베딩이랑 dot softmax하여 유사도를 계산함. 이 결과는 스토리 남은 임베딩에 더해지며 질문을 추가로 강조하기 위해 이 더해진 결과에 질문문장을 concat하여 lstm-dense-softmax를 거치는 구조임.

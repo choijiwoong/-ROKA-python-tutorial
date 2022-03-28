@@ -1,0 +1,11 @@
+story_max_len=70
+question_max_len=5
+embed_size=50
+
+input_encoded_m: (None, 70,50) (samples, story_max_len, embedding_dim)
+input_encoded_c: (None, 70, 5) (samples, story_max_len, question_max_len)
+Question_encoded: (None, 5, 50) (samples, question_max_len, embedding_dim)
+
+match: (None, 70, 5) (samples, story_max_len, question_max_len) 맞음.
+response: (None, 5, 70) (samples, question_max_len, story_max_len) 맞음. thanks to permute
+answer: (None, 5, 120) (samples, question_max_len, embedding_dim+story_max_len) 맞음

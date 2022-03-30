@@ -21,14 +21,14 @@ def softmax(x):
 def cross_entropy_error(y, t):
     if y.ndim==1:#손실 계산을 위한 reshaping.
         t=t.reshape(1, t.size)
-        y=t.reshape(1, y.size)
+        y=y.reshape(1, y.size)
 
     if t.size==y.size:#t가 one-hot일 경우 고려, integerize
         t=t.argmax(axis=1)
 
     batch_size=y.shape[0]
 
-    cross_entropy=np.log(t[np.arange(batch_size), t]+1e-7)#cross_entropy구하기
+    cross_entropy=np.log(y[np.arange(batch_size), t]+1e-7)#cross_entropy구하기
     loss=-np.sum(cross_entropy)/batch_size
 
     return loss

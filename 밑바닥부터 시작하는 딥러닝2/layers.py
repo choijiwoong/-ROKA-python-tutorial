@@ -1,7 +1,7 @@
 from functions import softmax, cross_entropy_error
 import numpy as np
 
-class Matmul:
+class MatMul:
     def __init__(self, W):#입력받은 가중치를
         self.params=[W]#리스트로 저장하며
         self.grads=[np.zeros_like(W)]
@@ -101,9 +101,9 @@ class SoftmaxWithLoss:
         self.y=softmax(x)#softmax. 어차피 with loss라 미분은 -로 나옴
 
         if self.t.size==self.y.size:
-            self.t==self.t.argmax(axis=1)#one-hot고려
+            self.t=self.t.argmax(axis=1)#one-hot고려
 
-        loss=cross_entropy_errror(self.y, self.t)
+        loss=cross_entropy_error(self.y, self.t)
         return loss
 
     def backward(self, dout=1):

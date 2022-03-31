@@ -149,7 +149,7 @@ def eval_seq2seq(model, question, correct, id_to_char, verbose=False, is_reverse
     pass
 
 def clip_grads(grads, max_norm):#뭐 이해는 됬는데 무슨 역활인질 모르겠네.. trainer클래스에서 사용됨 기울기의 정규화 느낌인듯.
-    total_norm=0
+    total_norm=0#이거 RNN의 고질적인 문제중 하나인 gradient explosion을 대비하기 위한 것! 문턱값(threshold)을 넘으면 특정 수치로 내리는데 여기선 max_norm!(인자)
     for grad in grads:
         total_norm+=np.sum(grad**2)
     total_norm=np.sqrt(total_norm)#각 기울기에 L2 Norm을 적용하고

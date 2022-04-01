@@ -2,6 +2,7 @@ import sys
 import time
 import numpy
 import matplotlib.pyplot as plt
+from utils import clip_grads
 
 class Trainer:
     def __init__(self, model, optimizer):

@@ -164,3 +164,8 @@ def analogy(a,b,c, word_to_id, id_to_word, word_matrix, top=5, answer=None):
 
 def normalize(x):
     pass
+
+def to_gpu():
+    pass
+def to_cpu():
+    pass

@@ -142,12 +142,6 @@ def eval_perplexity(model, corpus, batch_size=10, time_size=35):
     ppl=np.exp(total_loss/max_iters)#모든 loss를 iter횟수로 평균을 내어 exponential처리.
     return ppl#총 손실의 평균이기에 낮을 수록 모델의 성능이 좋다.
 
-def eval_seq2seq(model, question, correct, id_to_char, verbose=False, is_reverse=False):#나머지는 나중에 나오면 해야거따
-    correct=correct.flatten()
-    start_id=correct[0]#머릿글자?
-    correct=correct[1:]
-    pass
-
 def clip_grads(grads, max_norm):#뭐 이해는 됬는데 무슨 역활인질 모르겠네.. trainer클래스에서 사용됨 기울기의 정규화 느낌인듯.
     total_norm=0#이거 RNN의 고질적인 문제중 하나인 gradient explosion을 대비하기 위한 것! 문턱값(threshold)을 넘으면 특정 수치로 내리는데 여기선 max_norm!(인자)
     for grad in grads:
@@ -169,3 +163,40 @@ def to_gpu():
     pass
 def to_cpu():
     pass
+
+def eval_seq2seq(model, question, correct, id_to_char,
+                 verbos=False, is_reverse=False):#배껴옴
+    correct = correct.flatten()
+    # 머릿글자
+    start_id = correct[0]
+    correct = correct[1:]
+    guess = model.generate(question, start_id, len(correct))
+
+    # 문자열로 변환
+    question = ''.join([id_to_char[int(c)] for c in question.flatten()])
+    correct = ''.join([id_to_char[int(c)] for c in correct])
+    guess = ''.join([id_to_char[int(c)] for c in guess])
+
+    if verbos:
+        if is_reverse:
+            question = question[::-1]
+
+        colors = {'ok': '\033[92m', 'fail': '\033[91m', 'close': '\033[0m'}
+        print('Q', question)
+        print('T', correct)
+
+        is_windows = os.name == 'nt'
+
+        if correct == guess:
+            mark = colors['ok'] + '☑' + colors['close']
+            if is_windows:
+                mark = 'O'
+            print(mark + ' ' + guess)
+        else:
+            mark = colors['fail'] + '☒' + colors['close']
+            if is_windows:
+                mark = 'X'
+            print(mark + ' ' + guess)
+        print('---')
+
+    return 1 if guess == correct else 0  

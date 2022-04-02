@@ -116,7 +116,7 @@ class SoftmaxWithLoss:
 
         return dx
 
-class Embedding:
+class Embedding:#chap4에서 word2vec의 성능을 개선하기 위해 모든 가중치곱을 하는 것이 아닌  필요한 부분만 얻기 위함.
     def __init__(self, W):#벡터들 세팅. lookup기능이니.
         self.params=[W]
         self.grads=[np.zeros_like(W)]
@@ -129,7 +129,7 @@ class Embedding:
         return out
 
     def backward(self, dout):
-        dW,=self.grads
-        dW[...]=0
-        np.add.at(dW, self.idx, dout)#dW의 idx위치에 dout을 더한다.???이 왜 미
-        return None
+        dW,=self.grads#기울기를 가져와서
+        dW[...]=0#형상을 유지한 채 0으로 채운뒤
+        np.add.at(dW, self.idx, dout)#해당 위치에 dout을 할당. 그냥 가져오는 역활의 임베딩이기에 dout을 그냥 흘려보낸다. 다만 그 위치에 할당하고 나머지 0으로.
+        return None#단순히 =dout이 아니라 더하는 이유는 idx가 여러개인데 겹치는 경우 [0,1,2,0]의 경우 0이 2번 backward되어야하는데 할당해버리면 하나가 반영이 안되기에 add

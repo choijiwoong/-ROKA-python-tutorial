@@ -230,7 +230,7 @@ class TimeLSTM:
         grads=[0,0,0]
         for t in reversed(range(T)):
             layer=self.layers[t]
-            dx, dh, dx=layer.backward(dhs[:, t, :]+dh, dc)
+            dx, dh, dc=layer.backward(dhs[:, t, :]+dh, dc)
             dxs[:,t,:]=dx#각 시점의 dx저장
             for i, grad in enumerate(layer.grads):
                 grads[i]+=grad

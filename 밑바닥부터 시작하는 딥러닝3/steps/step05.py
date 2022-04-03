@@ -1,0 +1,1 @@
+#chain rule, loss function

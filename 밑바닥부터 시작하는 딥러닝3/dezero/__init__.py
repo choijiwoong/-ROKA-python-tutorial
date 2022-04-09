@@ -1,6 +1,6 @@
 #모듈 임포트시 제일 먼저 실행되는 파일
 
-is_simple_core=True
+is_simple_core=False
 
 if is_simple_core:
     from dezero.core_simple import Variable

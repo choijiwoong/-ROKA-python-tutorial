@@ -8,7 +8,7 @@ class Model(L.Layer):#Layer에서 plot만 추가
         return utils.plot_dot_graph(y, verbose=True, to_file=to_file)
 
 class MLP(Model):
-    def __init__(sel,f fc_output_sizes, activation=F.sigmoid):#2nd argument는 layer크기들을 의미.
+    def __init__(self, fc_output_sizes, activation=F.sigmoid):#2nd argument는 layer크기들을 의미.
         super().__init__()
         self.activation=activation
         self.layers=[]
@@ -20,7 +20,7 @@ class MLP(Model):
 
     def forward(self, x):
         for l in self.layers[:-1]:
-            x=self.activationi(l(x))
+            x=self.activation(l(x))
         return self.layers[-1](x)
 #model=MLP((10,1))->2층 MLP
 #model=MLP((10,20,30,40,1))->5층 MLP

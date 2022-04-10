@@ -19,4 +19,14 @@ else:
     from dezero.core import as_variable
     from dezero.core import setup_variable
 
+    #import dezero.datasets
+    #import dezero.dataloaders
+    #import dezero.optimizers
+    import dezero.functions
+    #import dezero.functions_conv
+    #import dezero.layers
+    import dezero.utils
+    #import dezero.cuda
+    #import dezero.transforms
+
 setup_variable()

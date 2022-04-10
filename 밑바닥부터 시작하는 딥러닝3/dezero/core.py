@@ -2,6 +2,7 @@
 import weakref
 import numpy as np
 import contextlib
+import dezero
 
 class Config:
     enable_backprop=True
@@ -101,6 +102,21 @@ class Variable:
                 for y in f.outputs:
                     y().grad=None
 
+    def reshape(self, *shape):
+        if len(shape)==1 and isinstance(shape[0], (tuple, list)):
+            shape=shape[0]#원소 하나만 뾱(만약 (3,)이런식이면 (3,1)로 reshape할 수 있으니..)
+        return dezero.functions.reshape(self, shape)
+
+    def transpose(self):
+        return dezero.functions.transpose(self)
+
+    @property
+    def T(self):
+        return dezero.functions.transpose(self)
+
+    def sum(self, axis=None, keepdims=False):
+        return dezero.functions.sum(self, axis, keepdims)
+
 
 def as_variable(obj):
     if isinstance(obj, Variable):
@@ -140,23 +156,34 @@ class Function:
 
 class Add(Function):
     def forward(self, x0, x1):
+        self.x0_shape, self.x1_shape=x0.shape, x1.shape#broadcast시 미분을 위해 저장
         y=x0+x1
         return y
 
     def backward(self, gy):
-        return gy, gy
+        gx0, gx1=gy, gy
+        if self.x0_shape!=self.x1_shape:#초기 인자로 들어온 둘의 형상이 달랐다면(x0+x1시 np에 의해 브로드캐스팅되었다면)
+            gx0=dezero.functions.sum_to(gx0, self.x0_shape)#본래의 형상으로 sum_to(broadcast된 만큼 누산)
+            gx1=dezero.functions.sum_to(gx1, self.x1_shape)
+        return gx0, gx1
 def add(x0, x1):
     x1=as_array(x1)
     return Add()(x0, x1)
 
 class Mul(Function):
     def forward(self, x0, x1):
+        self.x0_shape, self.x1_shape=x0.shape, x1.shape
         y=x0*x1
         return y
 
     def backward(self, gy):
-        x0, x1=self.inputs#Variable로 저장되니(not ndarray). 나머지도 ndarray로 받으면 변경.
-        return gy*x1, gy*x0
+        x0, x1=self.inputs
+        gx0, gx1=gy*x1, gy*x0
+        if self.x0_shape!=self.x1_shape:
+            gx0=dezero.functions.sum_to(gx0, self.x0_shape)
+            gx1=dezero.functions.sum_to(gx1, self.x1_shape)
+        #Variable로 저장되니(not ndarray). 나머지도 ndarray로 받으면 변경.
+        return gx0, gx1
 def mul(x0, x1):
     x1=as_array(x1)
     return Mul()(x0, x1)
@@ -172,11 +199,16 @@ def neg(x):
 
 class Sub(Function):
     def forward(self, x0, x1):
+        self.x0_shape, self.x1_shape=x0.shape, x1.shape
         y=x0-x1
         return y
 
     def backward(self, gy):
-        return gy, -gy
+        gx0, gx1=gy, -gy
+        if self.x0_shape!=self.x1_shape:
+            gx0=dezero.functions.sum_to(gx0, self.x0_shape)
+            gx1=dezero.functions.sum_to(gx1, self.x1_shape)
+        return gx0, gx1
 def sub(x0, x1):
     x1=as_array(x1)
     return Sub()(x0, x1)
@@ -186,6 +218,7 @@ def rsub(x0, x1):
 
 class Div(Function):
     def forward(self, x0, x1):
+        self.x0_shape, self.x1_shape=x0.shape, x1.shape
         y=x0/x1
         return y
 
@@ -193,6 +226,9 @@ class Div(Function):
         x0, x1=self.inputs
         gx0=gy/x1
         gx1=gy*(-x0/x1**2)
+        if self.x0_shape!=self.x1_shape:
+            gx0=dezero.functions.sum_to(gx0, self.x0_shape)
+            gx1=dezero.functions.sum_to(gx1, self.x1_shape)
         return gx0, gx1
 def div(x0, x1):
     x1=as_array(x1)

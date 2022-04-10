@@ -1,6 +1,7 @@
 import os
 import subprocess
 
+#[가시화툴]
 def _dot_var(v, verbose=False):#Variable전용 dot
     dot_var='{} [label="{}", color=orange, style=filled]\n'
 
@@ -58,3 +59,34 @@ def plot_dot_graph(output, verbose=True, to_file='graph.png'):
     extension=os.path.splitext(to_file)[1][1:]#확장자
     cmd='dot {} -T {} -o {}'.format(graph_path, extension, to_file)#Dot파일을 png혹은 pdf형식에 따라 ~로 저장
     subprocess.run(cmd, shell=True)
+
+#툴
+def reshape_sum_backward(gy, x_shape, axis, keepdims):#reshape할때 sum의 axis, keepdims인자 고려
+    ndim=len(x_shape)
+    tupled_axis=axis
+    if axis is None:
+        tupled_axis=None
+    elif not isinstance(axis, tuple):
+        tupled_acis=(axis,)
+
+    if not (ndim==0 or tupled_axis is None or keepdims):#튜플 혹은 ndim이나 keepdims가 존재
+        actual_axis=[a if a>=0 else a+ndim for a in tupled_axis]#-값도 고려하여 실제 축값으로 변경
+        shape=list(gy.shape)#순전파 출력의 크기(현재 입력)
+        for a in sorted(actual_axis):
+            shape.insert(a,1)#실제 축값에 1을 삽입
+    else:#스칼라 혹은 기타인자 None
+        shape=gy.shape
+
+    gy=gy.reshape(shape)#gy's shape, tupled_axis, keepdims에 따라 성형만 해준다.
+    return gy
+
+def sum_to(x, shape):#broadcast된 (2,1)->(2,4)를 다시 (2,1)로(lead는 뭔지 모르겠음..ㅠ대충 아예 (2,)->(2,4)이런경우 말하는거같긴함..)
+    ndim=len(shape)
+    lead=x.ndim-ndim#얼마나 더해야하는지
+    lead_axis=tuple(range(lead))
+
+    axis=tuple([i+lead for i, sx in enumerate(shape) if sx==1])#현재 1인 후보값들
+    y=x.sum(lead_axis+axis, keepdims=True)#x.shape와 shape의 차이나는 부분을 매꿀
+    if lead>0:
+        y=y.squeeze(lead_axis)
+    return y

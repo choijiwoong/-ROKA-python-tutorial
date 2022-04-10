@@ -134,6 +134,19 @@ class Variable:
     def to_gpu(self):#self.data를 cupy로
         if self.data is not None:
             self.data=dezero.cuda.as_cupy(self.data)
+
+    def unchain(self):#RNN BPTT
+        self.creator=None
+
+    def unchain_backward(self):#모든 변수의 연결 타고가며 끊기.(세대 고려X)
+        if self.creator is not None:
+            funcs=[self.creator]
+            while funcs:
+                f=funcs.pop()
+                for x in f.inputs:
+                    if x.creator is not None:
+                        funcs.append(x.creator)
+                        x.unchain()
         
 
 class Parameter(Variable):#for 구분

@@ -153,3 +153,61 @@ class Conv2d(Layer):
 
         y=F.conv2d_simple(x, self.W, self.b, self.stride, self.pad)
         return y
+
+class RNN(Layer):#tanh(hW+xW+b)_편향 하나임
+    def __init__(self, hidden_size, in_size=None):
+        super().__init__()
+        self.x2h=Linear(hidden_size, in_size=in_size)#hidden_state크기, input data크기
+        self.h2h=Linear(hidden_size, in_size=in_size, nobias=True)
+        self.h=None#hidden_state
+
+    def reset_state(self):
+        self.h=None
+
+    def forward(self, x):
+        if self.h is None:
+            h_new=F.tanh(self.x2h(x))
+        else:
+            h_new=F.tanh(self.x2h(x)+self.h2h(self.h))
+        self.h=h_new
+        return h_new#hidden_state가 곧 출력
+    
+class LSTM(Layer):#forget, input, output, how many(u, tanh)
+    def __init__(self, hidden_size, in_size=None):
+        super().__init__()
+
+        H,I=hidden_size, in_size
+        self.x2f=Linear(H, in_size=I)
+        self.x2i=Linear(H, in_size=I)
+        self.x2o=Linear(H, in_size=I)
+        self.x2u=Linear(H, in_size=I)
+        self.h2f=Linear(H, in_size=H, nobias=True)#hW+xW+b
+        self.h2i=Linear(H, in_size=H, nobias=True)
+        self.h2o=Linear(H, in_size=H, nobias=True)
+        self.h2u=Linear(H, in_size=H, nobias=True)
+        self.reset_state()
+
+    def reset_state(self):
+        self.h=None
+        self.c=None
+
+    def forward(self, x):
+        if self.h is None:
+            f=F.sigmoid(self.x2f(x))
+            i=F.sigmoid(self.x2i(x))
+            o=F.sigmoid(self.x2o(x))
+            u=F.tanh(self.x2u(x))#how many remember
+        else:
+            f=F.sigmoid(self.x2f(x)+self.h2f(self.h))
+            i=F.sigmoid(self.x2i(x)+self.h2i(self.h))
+            o=F.sigmoid(self.x2o(x)+self.h2o(self.h))
+            u=F.tanh(self.x2u(x)+self.h2u(self.h))
+
+        if self.c is None:#첫 timestep
+            c_new=(i*u)#전 cell_state가 없으니 input만 생각
+        else:
+            c_new=(f*self.c)+(i*u)#forget*cell_state+input*how many
+        h_new=o*F.tanh(c_new)#cell_state에 tanh끼고 output이랑 곱하면 hidden_state
+
+        self.h, self.c=h_new, c_new
+        return h_new#c는 내부처리목적

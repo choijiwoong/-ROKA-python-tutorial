@@ -1,63 +1,35 @@
 import numpy as np
-gpu_enable = True
+gpu_enable=True
 try:
     import cupy as cp
-    cupy = cp
+    cupy=cp
 except ImportError:
-    gpu_enable = False
-from dezero import Variable
-
+    gpu_enable=False
+import dezero
 
 def get_array_module(x):
-    """Returns the array module for `x`.
+    if isinstance(x, dezero.core.Variable):
+        x=x.data#데이터만 쏙
 
-    Args:
-        x (dezero.Variable or numpy.ndarray or cupy.ndarray): Values to
-            determine whether NumPy or CuPy should be used.
-
-    Returns:
-        module: `cupy` or `numpy` is returned based on the argument.
-    """
-    if isinstance(x, Variable):
-        x = x.data
-
-    if not gpu_enable:
+    if not gpu_enable:#gpu사용 불가면 numpy로
         return np
-    xp = cp.get_array_module(x)
+    xp=cp.get_array_module(x)#쿠파이의 적합합 모듈 반환 이용
     return xp
 
-
 def as_numpy(x):
-    """Convert to `numpy.ndarray`.
+    if isinstance(x, dezero.core.Variable):
+        x=x.data
 
-    Args:
-        x (`numpy.ndarray` or `cupy.ndarray`): Arbitrary object that can be
-            converted to `numpy.ndarray`.
-    Returns:
-        `numpy.ndarray`: Converted array.
-    """
-    if isinstance(x, Variable):
-        x = x.data
-
-    if np.isscalar(x):
+    if npisscalar(x):
         return np.array(x)
     elif isinstance(x, np.ndarray):
         return x
-    return cp.asnumpy(x)
-
+    return cp.asnumpy(x)#cupy->numpy
 
 def as_cupy(x):
-    """Convert to `cupy.ndarray`.
-
-    Args:
-        x (`numpy.ndarray` or `cupy.ndarray`): Arbitrary object that can be
-            converted to `cupy.ndarray`.
-    Returns:
-        `cupy.ndarray`: Converted array.
-    """
-    if isinstance(x, Variable):
-        x = x.data
+    if isinstance(x, dezero.core.Variable):
+        x=x.data
 
     if not gpu_enable:
-        raise Exception('CuPy cannot be loaded. Install CuPy!')
-    return cp.asarray(x)
+        raise Exception('쿠파이(CuPy)를 로드할 수 없습니다. 쿠파이를 설치해주세요!')
+    return cp.asarray(x)#numpy->cupy

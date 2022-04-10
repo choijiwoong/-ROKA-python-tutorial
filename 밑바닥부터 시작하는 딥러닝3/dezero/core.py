@@ -3,9 +3,11 @@ import weakref
 import numpy as np
 import contextlib
 import dezero
+from dezero import cuda
 
 class Config:
     enable_backprop=True
+    train=True
 
 @contextlib.contextmanager
 def using_config(name, value):
@@ -15,6 +17,9 @@ def using_config(name, value):
         yield
     finally:
         setattr(Config, name, old_value)
+
+def test_mode():#for dropout
+    return using_config('train', False)
 
 def no_grad():
     return using_config('enable_backprop', False)
@@ -107,8 +112,13 @@ class Variable:
             shape=shape[0]#원소 하나만 뾱(만약 (3,)이런식이면 (3,1)로 reshape할 수 있으니..)
         return dezero.functions.reshape(self, shape)
 
-    def transpose(self):
-        return dezero.functions.transpose(self)
+    def transpose(self, *axes):#function꺼 호출전에 buffer느낌인데 약간의 전처리 포함.
+        if len(axes) == 0:
+            axes = None
+        elif len(axes) == 1:
+            if isinstance(axes[0], (tuple, list)) or axes[0] is None:
+                axes = axes[0]
+        return dezero.functions.transpose(self, axes)
 
     @property
     def T(self):
@@ -116,6 +126,15 @@ class Variable:
 
     def sum(self, axis=None, keepdims=False):
         return dezero.functions.sum(self, axis, keepdims)
+
+    def to_cpu(self):#self.data를 numpy로
+        if self.data is not None:
+            self.data=dezero.cuda.as_numpy(self.data)
+
+    def to_gpu(self):#self.data를 cupy로
+        if self.data is not None:
+            self.data=dezero.cuda.as_cupy(self.data)
+        
 
 class Parameter(Variable):#for 구분
     pass
@@ -125,9 +144,9 @@ def as_variable(obj):
         return obj
     return Variable(obj)
 
-def as_array(x):
+def as_array(x, array_module=np):
     if np.isscalar(x):
-        return np.array(x)
+        return array_module.array(x)
     return x
 
 
@@ -169,7 +188,7 @@ class Add(Function):
             gx1=dezero.functions.sum_to(gx1, self.x1_shape)
         return gx0, gx1
 def add(x0, x1):
-    x1=as_array(x1)
+    x1=as_array(x1, cuda.get_array_module(x0.data))
     return Add()(x0, x1)
 
 class Mul(Function):
@@ -187,7 +206,7 @@ class Mul(Function):
         #Variable로 저장되니(not ndarray). 나머지도 ndarray로 받으면 변경.
         return gx0, gx1
 def mul(x0, x1):
-    x1=as_array(x1)
+    x1=as_array(x1, cuda.get_array_module(x0.data))
     return Mul()(x0, x1)
 
 class Neg(Function):
@@ -212,10 +231,10 @@ class Sub(Function):
             gx1=dezero.functions.sum_to(gx1, self.x1_shape)
         return gx0, gx1
 def sub(x0, x1):
-    x1=as_array(x1)
+    x1=as_array(x1, cuda.get_array_module(x0.data))
     return Sub()(x0, x1)
 def rsub(x0, x1):
-    x1=as_array(x1)
+    x1=as_array(x1, cuda.get_array_module(x0.data))
     return sub(x1, x0)
 
 class Div(Function):
@@ -233,10 +252,10 @@ class Div(Function):
             gx1=dezero.functions.sum_to(gx1, self.x1_shape)
         return gx0, gx1
 def div(x0, x1):
-    x1=as_array(x1)
+    x1=as_array(x1, cuda.get_array_module(x0.data))
     return Div()(x0,x1)
 def rdiv(x0, x1):
-    x1=as_array(x1)
+    x1=as_array(x1, cuda.get_array_module(x0.data))
     return div(x1, x0)
 
 class Pow(Function):

@@ -22,13 +22,14 @@ else:
     from dezero.layers import Layer
     from dezero.models import Model
     from dezero.dataloaders import DataLoader
+    from dezero.core import test_mode
     
 
     import dezero.datasets
     import dezero.dataloaders
     import dezero.optimizers
     import dezero.functions
-    #import dezero.functions_conv
+    import dezero.functions_conv
     import dezero.layers
     import dezero.utils
     import dezero.cuda

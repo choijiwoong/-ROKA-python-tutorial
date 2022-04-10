@@ -1,11 +1,12 @@
 import numpy as np
-from dezero.core import Function, as_variable, Variable, as_array
+from dezero.core import Function, as_variable, Variable, as_array, Config
 from dezero import utils
 from dezero import cuda
 
 class Sin(Function):
     def forward(self, x):
-        y=np.sin(x)
+        xp=cuda.get_array_module(x)
+        y=xp.sin(x)
         return y
 
     def backward(self, gy):
@@ -17,7 +18,8 @@ def sin(x):
 
 class Cos(Function):
     def forward(self, x):
-        y=np.cos(x)
+        xp=cuda.get_array_module(x)
+        y=xp.cos(x)
         return y
 
     def backward(self, gy):
@@ -29,7 +31,8 @@ def cos(x):
 
 class Tanh(Function):
     def forward(self, x):
-        y=np.tanh(x)
+        xp=cuda.get_array_module(x)
+        y=xp.tanh(x)
         return y
 
     def backward(self, gy):
@@ -99,9 +102,6 @@ class Transpose(Function):#np.transpose내부적 사용
         return transpose(gy, inv_axes)#값을 기준으로 정렬된 축의 index들을 np.transpose에 전달
 def transpose(x, axes=None):
     return Transpose(axes)(x)
-        
-def transpose(x):
-    return Transpose()(x)
 
 """
 class Sum(Function):#벡터에서의 미분 시 원소별 복사(브로드캐스팅)역시 Function으로 만들어야하기에
@@ -301,7 +301,8 @@ def softmax_cross_entropy(x, t):
 
 class ReLU(Function):
     def forward(self, x):
-        y=np.maximum(x, 0.0)
+        xp=cuda.get_array_module(x)
+        y=xp.maximum(x, 0.0)
         return y
 
     def backward(self, gy):
@@ -337,7 +338,8 @@ class GetItemGrad(Function):#backward에 사용
         self.in_shape=in_shape
 
     def forward(self, gy):
-        gx=np.zeros(self.in_shape)
+        xp=cuda.get_array_module(x)
+        gx=xp.zeros(self.in_shape)
         np.add.at(gx, self.slices, gy)#gx에 슬라이싱했던 부분에 gy를 더한다.
         return gx#슬라이싱 부분에만 gy가 누산된 ndarray를 반환
 
@@ -368,3 +370,32 @@ def accuracy(y, t):
     result=(pred==t.data)#비교
     acc=result.mean()#평균
     return Variable(as_array(acc))#정확도 짜자잔
+
+def dropout(x, dropout_ratio=0.5):
+    x=as_variable(x)
+
+    if Config.train:
+        xp=cuda.get_array_module(x)
+        mask=xp.random.rand(*x.shape)>dropout_ratio
+        scale=xp.array(1.0-dropout_ratio).astype(x.dtype)
+        y=x*mask/scale
+        return y
+    else:
+        return x
+
+
+#from dezero.functions_conv import conv2d
+#from dezero.functions_conv import deconv2d
+from dezero.functions_conv import conv2d_simple
+from dezero.functions_conv import im2col
+from dezero.functions_conv import col2im
+from dezero.functions_conv import pooling_simple
+#from dezero.functions_conv import pooling
+#from dezero.functions_conv import average_pooling
+from dezero.core import add
+from dezero.core import sub
+from dezero.core import rsub
+from dezero.core import mul
+from dezero.core import div
+from dezero.core import neg
+from dezero.core import pow

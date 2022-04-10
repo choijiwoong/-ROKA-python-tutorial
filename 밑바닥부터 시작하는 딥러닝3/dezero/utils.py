@@ -143,7 +143,7 @@ def get_file(url, file_name=None):
 
     return file_path
 
-def pair(x):
+def pair(x):#conv에서 짝맞추기위해 2개원소 튜플로 scalar를 변환
     if isinstance(x, int):
         return (x, x)
     elif isinstance(x, tuple):
@@ -162,3 +162,6 @@ def show_progress(block_num, block_size, total_size):
     if i >= 30: i = 30
     bar = "#" * i + "." * (30 - i)
     print(bar_template.format(bar, p), end='')
+
+def get_conv_outsize(input_size, kernel_size, stride, pad):
+    return (input_size+pad*2-kernel_size)//stride+1
